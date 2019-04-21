@@ -1,17 +1,15 @@
-from __future__ import unicode_literals
-
 import xml.dom.minidom as minidom
+from typing import Any, List
 
-import six
 
-from .base import FormattedText
+from .base import FormattedText, AnyFormattedText, StyleAndTextTuples
 
 __all__ = [
     'HTML'
 ]
 
 
-class HTML(object):
+class HTML:
     """
     HTML formatted text.
     Take something HTML-like, for use as a formatted string.
@@ -30,17 +28,16 @@ class HTML(object):
     E.g. ``<username>...</username>`` can be styled, by setting a style for
     ``username``.
     """
-    def __init__(self, value):
-        assert isinstance(value, six.text_type)
+    def __init__(self, value: str) -> None:
         self.value = value
         document = minidom.parseString('<html-root>%s</html-root>' % (value, ))
 
-        result = []
-        name_stack = []
-        fg_stack = []
-        bg_stack = []
+        result: StyleAndTextTuples = []
+        name_stack: List[str] = []
+        fg_stack: List[str] = []
+        bg_stack: List[str] = []
 
-        def get_current_style():
+        def get_current_style() -> str:
             " Build style string for current node. "
             parts = []
             if name_stack:
@@ -85,24 +82,24 @@ class HTML(object):
 
         self.formatted_text = FormattedText(result)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'HTML(%r)' % (self.value, )
 
-    def __pt_formatted_text__(self):
+    def __pt_formatted_text__(self) -> AnyFormattedText:
         return self.formatted_text
 
-    def format(self, *args, **kwargs):
+    def format(self, *args, **kwargs) -> 'HTML':
         """
         Like `str.format`, but make sure that the arguments are properly
         escaped.
         """
         # Escape all the arguments.
-        args = [html_escape(a) for a in args]
-        kwargs = dict((k, html_escape(v)) for k, v in kwargs.items())
+        escaped_args = [html_escape(a) for a in args]
+        escaped_kwargs = dict((k, html_escape(v)) for k, v in kwargs.items())
 
-        return HTML(self.value.format(*args, **kwargs))
+        return HTML(self.value.format(*escaped_args, **escaped_kwargs))
 
-    def __mod__(self, value):
+    def __mod__(self, value) -> 'HTML':
         """
         HTML('<b>%s</b>') % value
         """
@@ -113,10 +110,10 @@ class HTML(object):
         return HTML(self.value % value)
 
 
-def html_escape(text):
+def html_escape(text: Any) -> str:
     # The string interpolation functions also take integers and other types.
     # Convert to string first.
-    if not isinstance(text, six.text_type):
+    if not isinstance(text, str):
         text = '{}'.format(text)
 
     return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')

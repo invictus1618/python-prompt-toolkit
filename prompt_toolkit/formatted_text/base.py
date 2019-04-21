@@ -1,8 +1,11 @@
-from __future__ import unicode_literals
-
 import six
+from typing import Union, Any, Callable, List, Tuple, Iterable
+from typing_extensions import Protocol
 
 __all__ = [
+    'StyleAndTextTuples',
+    'MagicFormattedText',
+    'AnyFormattedText',
     'to_formatted_text',
     'is_formatted_text',
     'Template',
@@ -10,8 +13,30 @@ __all__ = [
     'FormattedText',
 ]
 
+# List of (style, text) tuples.
+StyleAndTextTuples = List[Tuple[str, str]]
+StyleAndTextTuplesWithMouseHandlers = List[Union[Tuple[str, str], Tuple[str, str, Callable]]]
 
-def to_formatted_text(value, style='', auto_convert=False):
+
+class MagicFormattedText(Protocol):
+    """
+    Any object that implements ``__pt_formatted_text__`` represents formatted
+    text.
+    """
+    def __pt_formatted_text__(self) -> 'AnyFormattedText':
+        ...
+
+
+AnyFormattedText = Union[
+    str,
+    MagicFormattedText,
+    StyleAndTextTuples,
+    Callable[[], 'AnyFormattedText']
+]
+
+
+def to_formatted_text(value: AnyFormattedText, style: str = '',
+                      auto_convert: bool = False):
     """
     Convert the given value (which can be formatted text) into a list of text
     fragments. (Which is the canonical form of formatted text.) The outcome is
@@ -25,17 +50,15 @@ def to_formatted_text(value, style='', auto_convert=False):
     :param auto_convert: If `True`, also accept other types, and convert them
         to a string first.
     """
-    assert isinstance(style, six.text_type)
-
     if value is None:
         result = []
-    elif isinstance(value, six.text_type):
+    elif isinstance(value, str):
         result = [('', value)]
     elif isinstance(value, list):
         if len(value):
-            assert isinstance(value[0][0], six.text_type), \
+            assert isinstance(value[0][0], str), \
                 'Expecting string, got: %r' % (value[0][0], )
-            assert isinstance(value[0][1], six.text_type), \
+            assert isinstance(value[0][1], str), \
                 'Expecting string, got: %r' % (value[0][1], )
 
         result = value
@@ -70,7 +93,7 @@ def to_formatted_text(value, style='', auto_convert=False):
         return FormattedText(result)
 
 
-def is_formatted_text(value):
+def is_formatted_text(value: Any) -> bool:
     """
     Check whether the input is valid formatted text (for use in assert
     statements).
@@ -78,29 +101,29 @@ def is_formatted_text(value):
     """
     if callable(value):
         return True
-    if isinstance(value, (six.text_type, list)):
+    if isinstance(value, (str, list)):
         return True
     if hasattr(value, '__pt_formatted_text__'):
         return True
     return False
 
 
-class FormattedText(list):
+class FormattedText(StyleAndTextTuplesWithMouseHandlers):
     """
     A list of ``(style, text)`` tuples.
 
     (In some situations, this can also be ``(style, text, mouse_handler)``
     tuples.)
     """
-    def __pt_formatted_text__(self):
+    def __pt_formatted_text__(self) -> AnyFormattedText:
         return self
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'FormattedText(%s)' % (
             super(FormattedText, self).__repr__())
 
 
-class Template(object):
+class Template:
     """
     Template for string interpolation with formatted text.
 
@@ -110,14 +133,11 @@ class Template(object):
 
     :param text: Plain text.
     """
-    def __init__(self, text):
-        assert isinstance(text, six.text_type)
+    def __init__(self, text: str) -> None:
         assert '{0}' not in text
         self.text = text
 
-    def format(self, *values):
-        assert all(is_formatted_text(v) for v in values)
-
+    def format(self, *values: AnyFormattedText) -> AnyFormattedText:
         def get_result():
             # Split the template in parts.
             parts = self.text.split('{}')
@@ -132,15 +152,14 @@ class Template(object):
         return get_result
 
 
-def merge_formatted_text(items):
+def merge_formatted_text(items: Iterable[AnyFormattedText]) -> AnyFormattedText:
     """
     Merge (Concatenate) several pieces of formatted text together.
     """
-    assert all(is_formatted_text(v) for v in items)
-
     def _merge_formatted_text():
         result = FormattedText()
         for i in items:
             result.extend(to_formatted_text(i))
         return result
+
     return _merge_formatted_text

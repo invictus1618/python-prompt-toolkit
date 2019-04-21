@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import types
 
 from prompt_toolkit.eventloop.defaults import get_event_loop
@@ -119,7 +117,7 @@ def _run_coroutine(coroutine):
     return result_f
 
 
-class _FutureRef(object):
+class _FutureRef:
     def __init__(self, future):
         self.future = future
 

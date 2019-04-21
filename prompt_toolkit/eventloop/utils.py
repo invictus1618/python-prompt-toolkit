@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import threading
 
 from .context import context, get_context_id
@@ -10,7 +8,7 @@ __all__ = [
 ]
 
 
-class ThreadWithFuture(object):
+class ThreadWithFuture:
     """
     Wrapper around `Thread`.
 

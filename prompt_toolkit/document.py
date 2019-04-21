@@ -1,15 +1,11 @@
 """
 The `Document` that implements all the text operations/querying.
 """
-from __future__ import unicode_literals
-
 import bisect
 import re
 import string
 import weakref
-
-import six
-from six.moves import map, range
+from typing import Dict, Optional
 
 from .clipboard import ClipboardData
 from .filters import vi_mode
@@ -38,7 +34,7 @@ _FIND_CURRENT_BIG_WORD_INCLUDE_TRAILING_WHITESPACE_RE = re.compile(r'^([^\s]+\s*
 # (Document instances are considered immutable. That means that if another
 # `Document` is constructed with the same text, it should have the same
 # `_DocumentCache`.)
-_text_to_document_cache = weakref.WeakValueDictionary()  # Maps document.text to DocumentCache instance.
+_text_to_document_cache: Dict[str, '_DocumentCache'] = weakref.WeakValueDictionary()  # Maps document.text to DocumentCache instance.
 
 
 class _ImmutableLineList(list):
@@ -60,7 +56,7 @@ class _ImmutableLineList(list):
     sort = _error
 
 
-class _DocumentCache(object):
+class _DocumentCache:
     def __init__(self):
         #: List of lines for the Document text.
         self.lines = None
@@ -69,7 +65,7 @@ class _DocumentCache(object):
         self.line_indexes = None
 
 
-class Document(object):
+class Document:
     """
     This is a immutable class around the text and cursor position, and contains
     methods for querying this data, e.g. to give the text before the cursor.
@@ -83,9 +79,8 @@ class Document(object):
     """
     __slots__ = ('_text', '_cursor_position', '_selection', '_cache')
 
-    def __init__(self, text='', cursor_position=None, selection=None):
-        assert isinstance(text, six.text_type), 'Got %r' % text
-        assert selection is None or isinstance(selection, SelectionState)
+    def __init__(self, text: str = '', cursor_position: Optional[int] = None,
+                 selection: Optional[SelectionState] = None) -> None:
 
         # Check cursor position. It can also be right after the end. (Where we
         # insert text.)

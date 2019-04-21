@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import sys
 
 from prompt_toolkit.application.current import get_app
@@ -16,7 +14,7 @@ __all__ = [
 ]
 
 
-def create_input(stdin=None):
+def create_input(stdin=None) -> Input:
     stdin = stdin or sys.stdin
 
     if is_windows():
@@ -27,7 +25,7 @@ def create_input(stdin=None):
         return Vt100Input(stdin)
 
 
-def create_pipe_input():
+def create_pipe_input() -> Input:
     """
     Create an input pipe.
     This is mostly useful for unit testing.
@@ -43,7 +41,7 @@ def create_pipe_input():
 _default_input = TaskLocal()
 
 
-def get_default_input():
+def get_default_input() -> Input:
     """
     Get the input class to be used by default.
 
@@ -65,11 +63,10 @@ def get_default_input():
         return value
 
 
-def set_default_input(input):
+def set_default_input(input: Input) -> None:
     """
     Set the default `Input` class.
 
     (Used for instance, for the telnet submodule.)
     """
-    assert isinstance(input, Input)
     _default_input.set(input)

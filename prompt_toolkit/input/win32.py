@@ -1,16 +1,12 @@
-from __future__ import unicode_literals
-
 import msvcrt
 import os
 import sys
 from contextlib import contextmanager
 from ctypes import pointer, windll
 from ctypes.wintypes import DWORD
+from typing import Callable, Dict, Optional, ContextManager, Iterable
 
-import six
-from six.moves import range
-
-from prompt_toolkit.eventloop import get_event_loop
+from prompt_toolkit.eventloop import get_event_loop, EventLoop
 from prompt_toolkit.eventloop.win32 import wait_for_handles
 from prompt_toolkit.key_binding.key_processor import KeyPress
 from prompt_toolkit.keys import Keys
@@ -51,7 +47,7 @@ class Win32Input(Input):
         assert callable(input_ready_callback)
         return attach_win32_input(self, input_ready_callback)
 
-    def detach(self):
+    def detach(self) -> ContextManager:
         """
         Return a context manager that makes sure that this input is not active
         in the current event loop.
@@ -61,30 +57,30 @@ class Win32Input(Input):
     def read_keys(self):
         return list(self.console_input_reader.read())
 
-    def flush(self):
+    def flush(self) -> None:
         pass
 
     @property
-    def closed(self):
+    def closed(self) -> bool:
         return False
 
-    def raw_mode(self):
+    def raw_mode(self) -> ContextManager:
         return raw_mode()
 
-    def cooked_mode(self):
+    def cooked_mode(self) -> ContextManager:
         return cooked_mode()
 
-    def fileno(self):
+    def fileno(self) -> int:
         # The windows console doesn't depend on the file handle, so
         # this is not used for the event loop (which uses the
         # handle instead). But it's used in `Application.run_system_command`
         # which opens a subprocess with a given stdin/stdout.
         return sys.stdin.fileno()
 
-    def typeahead_hash(self):
+    def typeahead_hash(self) -> str:
         return 'win32-input'
 
-    def close(self):
+    def close(self) -> None:
         self.console_input_reader.close()
 
     @property
@@ -92,7 +88,7 @@ class Win32Input(Input):
         return self.console_input_reader.handle
 
 
-class ConsoleInputReader(object):
+class ConsoleInputReader:
     """
     :param recognize_paste: When True, try to discover paste actions and turn
         the event into a BracketedPaste.
@@ -174,7 +170,7 @@ class ConsoleInputReader(object):
     LEFT_CTRL_PRESSED = 0x0008
     RIGHT_CTRL_PRESSED = 0x0004
 
-    def __init__(self, recognize_paste=True):
+    def __init__(self, recognize_paste: bool = True) -> None:
         self._fdcon = None
         self.recognize_paste = recognize_paste
 
@@ -186,12 +182,12 @@ class ConsoleInputReader(object):
             self._fdcon = os.open('CONIN$', os.O_RDWR | os.O_BINARY)
             self.handle = msvcrt.get_osfhandle(self._fdcon)
 
-    def close(self):
+    def close(self) -> None:
         " Close fdcon. "
         if self._fdcon is not None:
             os.close(self._fdcon)
 
-    def read(self):
+    def read(self) -> Iterable[KeyPress]:
         """
         Return a list of `KeyPress` instances. It won't return anything when
         there was nothing to read.  (This function doesn't block.)
@@ -230,7 +226,7 @@ class ConsoleInputReader(object):
                 # Pasting: if the current key consists of text or \n, turn it
                 # into a BracketedPaste.
                 data = []
-                while k and (isinstance(k.key, six.text_type) or
+                while k and (isinstance(k.key, str) or
                              k.key == Keys.ControlJ):
                     data.append(k.data)
                     try:
@@ -246,7 +242,7 @@ class ConsoleInputReader(object):
             for k in all_keys:
                 yield k
 
-    def _insert_key_data(self, key_press):
+    def _insert_key_data(self, key_press: KeyPress) -> KeyPress:
         """
         Insert KeyPress data, for vt100 compatibility.
         """
@@ -281,7 +277,7 @@ class ConsoleInputReader(object):
                         yield key_press
 
     @staticmethod
-    def _is_paste(keys):
+    def _is_paste(keys) -> bool:
         """
         Return `True` when we should consider this list of keys as a paste
         event. Pasted text on windows will be turned into a
@@ -295,7 +291,7 @@ class ConsoleInputReader(object):
         newline_count = 0
 
         for k in keys:
-            if isinstance(k.key, six.text_type):
+            if isinstance(k.key, str):
                 text_count += 1
             if k.key == Keys.ControlM:
                 newline_count += 1
@@ -402,20 +398,17 @@ class ConsoleInputReader(object):
         return result
 
 
-_current_callbacks = {}  # loop -> callback
+_current_callbacks: Dict[EventLoop, Optional[Callable[[], None]]] = {}  # loop -> callback
 
 
 @contextmanager
-def attach_win32_input(input, callback):
+def attach_win32_input(input: Win32Input, callback: Callable[[], None]):
     """
     Context manager that makes this input active in the current event loop.
 
     :param input: :class:`~prompt_toolkit.input.Input` object.
     :param input_ready_callback: Called when the input is ready to read.
     """
-    assert isinstance(input, Input)
-    assert callable(callback)
-
     loop = get_event_loop()
     previous_callback = _current_callbacks.get(loop)
 
@@ -436,9 +429,7 @@ def attach_win32_input(input, callback):
 
 
 @contextmanager
-def detach_win32_input(input):
-    assert isinstance(input, Input)
-
+def detach_win32_input(input: Win32Input):
     loop = get_event_loop()
     previous = _current_callbacks.get(loop)
 
@@ -454,7 +445,7 @@ def detach_win32_input(input):
             _current_callbacks[loop] = previous
 
 
-class raw_mode(object):
+class raw_mode:
     """
     ::
 
@@ -475,7 +466,7 @@ class raw_mode(object):
 
         self._patch()
 
-    def _patch(self):
+    def _patch(self) -> None:
         # Set raw
         ENABLE_ECHO_INPUT = 0x0004
         ENABLE_LINE_INPUT = 0x0002
@@ -497,7 +488,7 @@ class cooked_mode(raw_mode):
         with cooked_mode(stdin):
             ''' The pseudo-terminal stdin is now used in cooked mode. '''
     """
-    def _patch(self):
+    def _patch(self) -> None:
         # Set cooked.
         ENABLE_ECHO_INPUT = 0x0004
         ENABLE_LINE_INPUT = 0x0002

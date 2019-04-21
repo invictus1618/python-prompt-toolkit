@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import math
 
 from six.moves import range, zip_longest

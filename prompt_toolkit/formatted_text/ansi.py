@@ -1,9 +1,9 @@
-from __future__ import unicode_literals
+from typing import Generator, List, Optional
 
 from prompt_toolkit.output.vt100 import BG_ANSI_COLORS, FG_ANSI_COLORS
 from prompt_toolkit.output.vt100 import _256_colors as _256_colors_table
 
-from .base import FormattedText
+from .base import StyleAndTextTuples, AnyFormattedText
 
 __all__ = [
     'ANSI',
@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 
-class ANSI(object):
+class ANSI:
     """
     ANSI formatted text.
     Take something ANSI escaped text, for use as a formatted string. E.g.
@@ -25,13 +25,13 @@ class ANSI(object):
     be used for instance, for inserting Final Term prompt commands.  They will
     be translated into a prompt_toolkit '[ZeroWidthEscape]' fragment.
     """
-    def __init__(self, value):
+    def __init__(self, value: str) -> None:
         self.value = value
-        self._formatted_text = FormattedText()
+        self._formatted_text: StyleAndTextTuples = []
 
         # Default style attributes.
-        self._color = None
-        self._bgcolor = None
+        self._color: Optional[str] = None
+        self._bgcolor: Optional[str] = None
         self._bold = False
         self._underline = False
         self._italic = False
@@ -45,7 +45,7 @@ class ANSI(object):
         for c in value:
             parser.send(c)
 
-    def _parse_corot(self):
+    def _parse_corot(self) -> Generator[None, str, None]:
         """
         Coroutine that parses the ANSI escape sequences.
         """
@@ -107,7 +107,7 @@ class ANSI(object):
                 #       output.
                 formatted_text.append((style, c))
 
-    def _select_graphic_rendition(self, attrs):
+    def _select_graphic_rendition(self, attrs: List[int]) -> None:
         """
         Taken a list of graphics attributes and apply changes.
         """
@@ -182,7 +182,7 @@ class ANSI(object):
                         elif attr == 48:
                             self._bgcolor = color_str
 
-    def _create_style_string(self):
+    def _create_style_string(self) -> str:
         """
         Turn current style flags into a string for usage in a formatted text.
         """
@@ -206,10 +206,10 @@ class ANSI(object):
 
         return ' '.join(result)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'ANSI(%r)' % (self.value, )
 
-    def __pt_formatted_text__(self):
+    def __pt_formatted_text__(self) -> AnyFormattedText:
         return self._formatted_text
 
     def format(self, *args, **kwargs):
@@ -235,7 +235,7 @@ for i, (r, g, b) in enumerate(_256_colors_table.colors):
     _256_colors[i] = '#%02x%02x%02x' % (r, g, b)
 
 
-def ansi_escape(text):
+def ansi_escape(text: str) -> str:
     """
     Replace characters with a special meaning.
     """

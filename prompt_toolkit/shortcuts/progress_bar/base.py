@@ -7,8 +7,6 @@ Progress bar implementation on top of prompt_toolkit.
         for item in pb(data):
             ...
 """
-from __future__ import unicode_literals
-
 import contextlib
 import datetime
 import functools
@@ -65,7 +63,7 @@ def create_key_bindings():
     return kb
 
 
-class ProgressBar(object):
+class ProgressBar:
     """
     Progress bar context manager.
 
@@ -247,7 +245,7 @@ class _ProgressControl(UIControl):
         return self._key_bindings
 
 
-class ProgressBarCounter(object):
+class ProgressBarCounter:
     """
     An individual counter (A progress bar can have multiple counters).
     """

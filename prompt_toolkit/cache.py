@@ -1,7 +1,6 @@
-from __future__ import unicode_literals
-
 from collections import deque
 from functools import wraps
+from typing import Callable, Dict, Deque, Generic, TypeVar, Tuple, cast
 
 __all__ = [
     'SimpleCache',
@@ -9,22 +8,25 @@ __all__ = [
     'memoized',
 ]
 
+_T = TypeVar('_T')
+_U = TypeVar('_U')
 
-class SimpleCache(object):
+
+class SimpleCache(Generic[_T, _U]):
     """
     Very simple cache that discards the oldest item when the cache size is
     exceeded.
 
     :param maxsize: Maximum size of the cache. (Don't make it too big.)
     """
-    def __init__(self, maxsize=8):
-        assert isinstance(maxsize, int) and maxsize > 0
+    def __init__(self, maxsize: int = 8) -> None:
+        assert maxsize > 0
 
-        self._data = {}
-        self._keys = deque()
-        self.maxsize = maxsize
+        self._data: Dict[_T, _U] = {}
+        self._keys: Deque[_T] = deque()
+        self.maxsize: int = maxsize
 
-    def get(self, key, getter_func):
+    def get(self, key: _T, getter_func: Callable[[], _U]) -> _U:
         """
         Get object from the cache.
         If not found, call `getter_func` to resolve it, and put that on the top
@@ -47,13 +49,17 @@ class SimpleCache(object):
 
             return value
 
-    def clear(self):
+    def clear(self) -> None:
         " Clear cache. "
         self._data = {}
         self._keys = deque()
 
 
-class FastDictCache(dict):
+_K = TypeVar('_K', bound=Tuple)
+_V = TypeVar('_V')
+
+
+class FastDictCache(Dict[_K, _V]):
     """
     Fast, lightweight cache which keeps at most `size` items.
     It will discard the oldest items in the cache first.
@@ -73,15 +79,15 @@ class FastDictCache(dict):
     #       SimpleCache is still required for cases where the cache key is not
     #       the same as the arguments given to the function that creates the
     #       value.)
-    def __init__(self, get_value=None, size=1000000):
-        assert callable(get_value)
-        assert isinstance(size, int) and size > 0
+    def __init__(self, get_value: Callable[..., _V],
+                 size: int = 1000000) -> None:
+        assert size > 0
 
-        self._keys = deque()
+        self._keys: Deque[_K] = deque()
         self.get_value = get_value
         self.size = size
 
-    def __missing__(self, key):
+    def __missing__(self, key: _K) -> _V:
         # Remove the oldest key when the size is exceeded.
         if len(self) > self.size:
             key_to_remove = self._keys.popleft()
@@ -94,12 +100,15 @@ class FastDictCache(dict):
         return result
 
 
-def memoized(maxsize=1024):
+_F = TypeVar('_F', bound=Callable)
+
+
+def memoized(maxsize: int = 1024) -> Callable[[_F], _F]:
     """
     Memoization decorator for immutable classes and pure functions.
     """
-    def decorator(obj):
-        cache = SimpleCache(maxsize=maxsize)
+    def decorator(obj: _F) -> _F:
+        cache: SimpleCache = SimpleCache(maxsize=maxsize)
 
         @wraps(obj)
         def new_callable(*a, **kw):
@@ -108,5 +117,5 @@ def memoized(maxsize=1024):
 
             key = (a, tuple(sorted(kw.items())))
             return cache.get(key, create_new)
-        return new_callable
+        return cast(_F, new_callable)
     return decorator

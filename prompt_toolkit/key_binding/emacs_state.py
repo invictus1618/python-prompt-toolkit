@@ -1,11 +1,9 @@
-from __future__ import unicode_literals
-
 __all__ = [
     'EmacsState',
 ]
 
 
-class EmacsState(object):
+class EmacsState:
     """
     Mutable class to hold Emacs specific state.
     """

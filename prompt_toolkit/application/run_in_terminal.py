@@ -1,7 +1,7 @@
 """
 Tools for running functions on the terminal above the current application or prompt.
 """
-from __future__ import unicode_literals
+from typing import Callable
 
 from prompt_toolkit.eventloop import (
     From,
@@ -20,7 +20,8 @@ __all__ = [
 ]
 
 
-def run_in_terminal(func, render_cli_done=False, in_executor=False):
+def run_in_terminal(func: Callable[[], None], render_cli_done: bool = False,
+                    in_executor: bool = False) -> Future:
     """
     Run function on the terminal above the current application or prompt.
 
@@ -50,7 +51,7 @@ def run_in_terminal(func, render_cli_done=False, in_executor=False):
     return run_coroutine_in_terminal(async_func, render_cli_done=render_cli_done)
 
 
-def run_coroutine_in_terminal(async_func, render_cli_done=False):
+def run_coroutine_in_terminal(async_func, render_cli_done: bool = False) -> Future:
     """
     Suspend the current application and run this coroutine instead.
     `async_func` can be a coroutine or a function that returns a Future.

@@ -15,8 +15,6 @@ from Python 3 (and asyncio).
         yield AsyncGeneratorItem(some_value)
         ...
 """
-from __future__ import unicode_literals
-
 from threading import RLock
 
 from six.moves.queue import Queue
@@ -32,7 +30,7 @@ __all__ = [
 ]
 
 
-class AsyncGeneratorItem(object):
+class AsyncGeneratorItem:
     def __init__(self, value):
         self.value = value
 

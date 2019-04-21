@@ -4,8 +4,6 @@ specification, but sufficient for a command line interface.)
 
 Inspired by `Twisted.conch.telnet`.
 """
-from __future__ import unicode_literals
-
 import struct
 
 from six import binary_type, int2byte, iterbytes
@@ -44,7 +42,7 @@ EL       = int2byte(248)
 GA       = int2byte(249)
 
 
-class TelnetProtocolParser(object):
+class TelnetProtocolParser:
     """
     Parser for the Telnet protocol.
     Usage::

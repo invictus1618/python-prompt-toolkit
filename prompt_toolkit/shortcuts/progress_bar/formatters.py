@@ -2,12 +2,10 @@
 Formatter classes for the progress bar.
 Each progress bar consists of a list of these formatters.
 """
-from __future__ import unicode_literals
-
 import time
 from abc import ABCMeta, abstractmethod
 
-from six import text_type, with_metaclass
+from six import text_type
 
 from prompt_toolkit.formatted_text import HTML, to_formatted_text
 from prompt_toolkit.formatted_text.utils import fragment_list_width
@@ -31,7 +29,7 @@ __all__ = [
 ]
 
 
-class Formatter(with_metaclass(ABCMeta, object)):
+class Formatter(metaclass=ABCMeta):
     """
     Base class for any formatter.
     """

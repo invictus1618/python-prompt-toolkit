@@ -2,8 +2,6 @@
 `GrammarLexer` is compatible with other lexers and can be used to highlight
 the input using a regular grammar with annotations.
 """
-from __future__ import unicode_literals
-
 import six
 from six.moves import range
 

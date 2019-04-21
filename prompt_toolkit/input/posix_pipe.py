@@ -1,4 +1,5 @@
 import os
+from typing import ContextManager
 
 from ..utils import DummyContext
 from .vt100 import Vt100Input
@@ -20,10 +21,10 @@ class PosixPipeInput(Vt100Input):
         input.send_text('inputdata')
     """
     _id = 0
-    def __init__(self, text=''):
+    def __init__(self, text: str = '') -> None:
         self._r, self._w = os.pipe()
 
-        class Stdin(object):
+        class Stdin:
             def isatty(stdin):
                 return True
 
@@ -38,23 +39,23 @@ class PosixPipeInput(Vt100Input):
         self._id = self.__class__._id
 
     @property
-    def responds_to_cpr(self):
+    def responds_to_cpr(self) -> bool:
         return False
 
-    def send_bytes(self, data):
+    def send_bytes(self, data: bytes) -> None:
         os.write(self._w, data)
 
-    def send_text(self, data):
+    def send_text(self, data: str) -> None:
         " Send text to the input. "
         os.write(self._w, data.encode('utf-8'))
 
-    def raw_mode(self):
+    def raw_mode(self) -> ContextManager:
         return DummyContext()
 
-    def cooked_mode(self):
+    def cooked_mode(self) -> ContextManager:
         return DummyContext()
 
-    def close(self):
+    def close(self) -> None:
         " Close pipe fds. "
         os.close(self._r)
         os.close(self._w)
@@ -63,7 +64,7 @@ class PosixPipeInput(Vt100Input):
         # The event loop still needs to know the the fileno for this input in order
         # to properly remove it from the selectors.
 
-    def typeahead_hash(self):
+    def typeahead_hash(self) -> str:
         """
         This needs to be unique for every `PipeInput`.
         """

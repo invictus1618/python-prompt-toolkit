@@ -1,8 +1,6 @@
 """
 Filters that accept a `Application` as argument.
 """
-from __future__ import unicode_literals
-
 import six
 
 from prompt_toolkit.application.current import get_app

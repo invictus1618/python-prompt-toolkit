@@ -1,13 +1,12 @@
 """
 Interface for an output.
 """
-from __future__ import unicode_literals
-
 from abc import ABCMeta, abstractmethod
 
-from six import with_metaclass
-
 from prompt_toolkit.layout.screen import Size
+from prompt_toolkit.styles import Attrs
+
+from .ColorDepth import ColorDepth
 
 __all__ = [
     'Output',
@@ -15,7 +14,7 @@ __all__ = [
 ]
 
 
-class Output(with_metaclass(ABCMeta, object)):
+class Output(metaclass=ABCMeta):
     """
     Base class defining the output interface for a
     :class:`~prompt_toolkit.renderer.Renderer`.
@@ -25,11 +24,11 @@ class Output(with_metaclass(ABCMeta, object)):
     :class:`~prompt_toolkit.terminal.win32_output.Win32Output`.
     """
     @abstractmethod
-    def fileno(self):
+    def fileno(self) -> int:
         " Return the file descriptor to which we can write for the output. "
 
     @abstractmethod
-    def encoding(self):
+    def encoding(self) -> str:
         """
         Return the encoding for this output, e.g. 'utf-8'.
         (This is used mainly to know which characters are supported by the
@@ -38,121 +37,121 @@ class Output(with_metaclass(ABCMeta, object)):
         """
 
     @abstractmethod
-    def write(self, data):
+    def write(self, data: str) -> None:
         " Write text (Terminal escape sequences will be removed/escaped.) "
 
     @abstractmethod
-    def write_raw(self, data):
+    def write_raw(self, data: str) -> None:
         " Write text. "
 
     @abstractmethod
-    def set_title(self, title):
+    def set_title(self, title: str) -> None:
         " Set terminal title. "
 
     @abstractmethod
-    def clear_title(self):
+    def clear_title(self) -> None:
         " Clear title again. (or restore previous title.) "
 
     @abstractmethod
-    def flush(self):
+    def flush(self) -> None:
         " Write to output stream and flush. "
 
     @abstractmethod
-    def erase_screen(self):
+    def erase_screen(self) -> None:
         """
         Erases the screen with the background colour and moves the cursor to
         home.
         """
 
     @abstractmethod
-    def enter_alternate_screen(self):
+    def enter_alternate_screen(self) -> None:
         " Go to the alternate screen buffer. (For full screen applications). "
 
     @abstractmethod
-    def quit_alternate_screen(self):
+    def quit_alternate_screen(self) -> None:
         " Leave the alternate screen buffer. "
 
     @abstractmethod
-    def enable_mouse_support(self):
+    def enable_mouse_support(self) -> None:
         " Enable mouse. "
 
     @abstractmethod
-    def disable_mouse_support(self):
+    def disable_mouse_support(self) -> None:
         " Disable mouse. "
 
     @abstractmethod
-    def erase_end_of_line(self):
+    def erase_end_of_line(self) -> None:
         """
         Erases from the current cursor position to the end of the current line.
         """
 
     @abstractmethod
-    def erase_down(self):
+    def erase_down(self) -> None:
         """
         Erases the screen from the current line down to the bottom of the
         screen.
         """
 
     @abstractmethod
-    def reset_attributes(self):
+    def reset_attributes(self) -> None:
         " Reset color and styling attributes. "
 
     @abstractmethod
-    def set_attributes(self, attrs, color_depth):
+    def set_attributes(self, attrs: Attrs, color_depth: ColorDepth) -> None:
         " Set new color and styling attributes. "
 
     @abstractmethod
-    def disable_autowrap(self):
+    def disable_autowrap(self) -> None:
         " Disable auto line wrapping. "
 
     @abstractmethod
-    def enable_autowrap(self):
+    def enable_autowrap(self) -> None:
         " Enable auto line wrapping. "
 
     @abstractmethod
-    def cursor_goto(self, row=0, column=0):
+    def cursor_goto(self, row: int = 0, column: int = 0) -> None:
         " Move cursor position. "
 
     @abstractmethod
-    def cursor_up(self, amount):
+    def cursor_up(self, amount: int) -> None:
         " Move cursor `amount` place up. "
 
     @abstractmethod
-    def cursor_down(self, amount):
+    def cursor_down(self, amount: int) -> None:
         " Move cursor `amount` place down. "
 
     @abstractmethod
-    def cursor_forward(self, amount):
+    def cursor_forward(self, amount: int) -> None:
         " Move cursor `amount` place forward. "
 
     @abstractmethod
-    def cursor_backward(self, amount):
+    def cursor_backward(self, amount: int) -> None:
         " Move cursor `amount` place backward. "
 
     @abstractmethod
-    def hide_cursor(self):
+    def hide_cursor(self) -> None:
         " Hide cursor. "
 
     @abstractmethod
-    def show_cursor(self):
+    def show_cursor(self) -> None:
         " Show cursor. "
 
-    def ask_for_cpr(self):
+    def ask_for_cpr(self) -> None:
         """
         Asks for a cursor position report (CPR).
         (VT100 only.)
         """
 
-    def bell(self):
+    def bell(self) -> None:
         " Sound bell. "
 
-    def enable_bracketed_paste(self):
+    def enable_bracketed_paste(self) -> None:
         " For vt100 only. "
 
-    def disable_bracketed_paste(self):
+    def disable_bracketed_paste(self) -> None:
         " For vt100 only. "
 
-    def scroll_buffer_to_prompt(self):
+    def scroll_buffer_to_prompt(self) -> None:
         " For Win32 only. "
 
 
@@ -164,7 +163,7 @@ class DummyOutput(Output):
         " There is no sensible default for fileno(). "
         raise NotImplementedError
 
-    def encoding(self):
+    def encoding(self) -> str:
         return 'utf-8'
 
     def write(self, data): pass
@@ -196,8 +195,8 @@ class DummyOutput(Output):
     def disable_bracketed_paste(self): pass
     def scroll_buffer_to_prompt(self): pass
 
-    def get_size(self):
+    def get_size(self) -> Size:
         return Size(rows=40, columns=80)
 
-    def get_rows_below_cursor_position(self):
+    def get_rows_below_cursor_position(self) -> int:
         return 40

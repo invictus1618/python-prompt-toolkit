@@ -1,14 +1,10 @@
 """
 Selectors for the Posix event loop.
 """
-from __future__ import absolute_import, unicode_literals
-
 import abc
 import errno
 import select
 import sys
-
-import six
 
 __all__ = [
     'AutoSelector',
@@ -28,7 +24,7 @@ def fd_to_int(fd):
         return fd.fileno()
 
 
-class Selector(six.with_metaclass(abc.ABCMeta, object)):
+class Selector(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def register(self, fd):
         assert isinstance(fd, int)

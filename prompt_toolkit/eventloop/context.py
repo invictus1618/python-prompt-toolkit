@@ -21,8 +21,6 @@ A new scope can be created as follows::
 Within this scope, a new value can be assigned, which is only visible within
 the scope. The scope as passed along when code is sent to an executor and back.
 """
-from __future__ import unicode_literals
-
 from functools import wraps
 from threading import local
 
@@ -47,7 +45,7 @@ def get_context_id():
         return 0  # Default context.
 
 
-class context(object):
+class context:
     """
     Context manager that activates a new scope.
     """
@@ -76,7 +74,7 @@ class context(object):
             _storage.context_id = self._previous_id
 
 
-class TaskLocal(object):
+class TaskLocal:
     """
     Like a thread local, but tied to the current task.
     """

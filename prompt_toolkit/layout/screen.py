@@ -1,6 +1,5 @@
-from __future__ import unicode_literals
-
 from collections import defaultdict, namedtuple
+from typing import Tuple, List, Dict, Callable, Optional, DefaultDict
 
 from prompt_toolkit.cache import FastDictCache
 from prompt_toolkit.utils import get_cwidth
@@ -17,7 +16,7 @@ Point = namedtuple('Point', 'x y')
 Size = namedtuple('Size', 'rows columns')
 
 
-class Char(object):
+class Char:
     """
     Represent a single character in a :class:`.Screen`.
 
@@ -31,7 +30,7 @@ class Char(object):
     # If we end up having one of these special control sequences in the input string,
     # we should display them as follows:
     # Usually this happens after a "quoted insert".
-    display_mappings = {
+    display_mappings: Dict[str, str] = {
         '\x00': '^@',  # Control space
         '\x01': '^A',
         '\x02': '^B',
@@ -106,7 +105,7 @@ class Char(object):
         '\xa0': ' ',
     }
 
-    def __init__(self, char=' ', style=''):
+    def __init__(self, char: str = ' ', style: str = ''):
         # If this character has to be displayed otherwise, take that one.
         if char in self.display_mappings:
             if char == '\xa0':
@@ -123,37 +122,45 @@ class Char(object):
         # as a member for performance.)
         self.width = get_cwidth(char)
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.char == other.char and self.style == other.style
 
-    def __ne__(self, other):
+    def __ne__(self, other) -> bool:
         # Not equal: We don't do `not char.__eq__` here, because of the
         # performance of calling yet another function.
         return self.char != other.char or self.style != other.style
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '%s(%r, %r)' % (self.__class__.__name__, self.char, self.style)
 
 
-_CHAR_CACHE = FastDictCache(Char, size=1000 * 1000)
+_CHAR_CACHE: FastDictCache[Tuple[str, str], Char] = FastDictCache(Char, size=1000 * 1000)
 Transparent = '[transparent]'
 
 
-class Screen(object):
+class Screen:
     """
     Two dimensional buffer of :class:`.Char` instances.
     """
-    def __init__(self, default_char=None, initial_width=0, initial_height=0):
-        if default_char is None:
-            default_char = _CHAR_CACHE[' ', Transparent]
+    def __init__(self, default_char: Optional[Char] = None,
+                 initial_width: int = 0,
+                 initial_height: int = 0) -> None:
 
-        self.data_buffer = defaultdict(lambda: defaultdict(lambda: default_char))
+        if default_char is None:
+            default_char2 = _CHAR_CACHE[' ', Transparent]
+        else:
+            default_char2 = default_char
+
+        self.data_buffer: DefaultDict[int, DefaultDict[int, Char]] = \
+            defaultdict(lambda: defaultdict(lambda: default_char2))
 
         #: Escape sequences to be injected.
-        self.zero_width_escapes = defaultdict(lambda: defaultdict(lambda: ''))
+        self.zero_width_escapes: DefaultDict[int, DefaultDict[int, str]] = \
+            defaultdict(lambda: defaultdict(lambda: ''))
 
         #: Position of the cursor.
-        self.cursor_positions = {}  # Map `Window` objects to `Point` objects.
+        from .containers import Window
+        self.cursor_positions: Dict[Window, Point] = {}  # Map `Window` objects to `Point` objects.
 
         #: Visibility of the cursor.
         self.show_cursor = True
@@ -162,7 +169,7 @@ class Screen(object):
         #: (We can't use the cursor position, because we don't want the
         #: completion menu to change its position when we browse through all the
         #: completions.)
-        self.menu_positions = {}  # Map `Window` objects to `Point` objects.
+        self.menu_positions: Dict[Window, Point] = {}  # Map `Window` objects to `Point` objects.
 
         #: Currently used width/height of the screen. This will increase when
         #: data is written to the screen.
@@ -171,9 +178,10 @@ class Screen(object):
 
         # Windows that have been drawn. (Each `Window` class will add itself to
         # this list.)
-        self.visible_windows = []
+        self.visible_windows: List[Window] = []
 
-        self._draw_float_functions = []  # List of (z_index, draw_func)
+        # List of (z_index, draw_func)
+        self._draw_float_functions: List[Tuple[int, Callable[[], None]]] = []
 
     def set_cursor_position(self, window, position):
         " Set the cursor position for a given window. "
@@ -206,17 +214,14 @@ class Screen(object):
             except KeyError:
                 return Point(x=0, y=0)
 
-    def draw_with_z_index(self, z_index, draw_func):
+    def draw_with_z_index(self, z_index: int, draw_func: Callable[[], None]):
         """
         Add a draw-function for a `Window` which has a >= 0 z_index.
         This will be postponed until `draw_all_floats` is called.
         """
-        assert isinstance(z_index, int), z_index
-        assert callable(draw_func)
-
         self._draw_float_functions.append((z_index, draw_func))
 
-    def draw_all_floats(self):
+    def draw_all_floats(self) -> None:
         """
         Draw all float functions in order of z-index.
         """
@@ -231,7 +236,7 @@ class Screen(object):
             self._draw_float_functions = functions[1:]
             functions[0][1]()
 
-    def append_style_to_content(self, style_str):
+    def append_style_to_content(self, style_str: str) -> None:
         """
         For all the characters in the screen.
         Set the style string to the given `style_str`.
@@ -245,7 +250,8 @@ class Screen(object):
             for x, char in row.items():
                 b[y][x] = char_cache[char.char, char.style + append_style]
 
-    def fill_area(self, write_position, style='', after=False):
+    def fill_area(self, write_position: 'WritePosition', style: str = '',
+                  after: bool = False) -> None:
         """
         Fill the content of this area, using the given `style`.
         The style is prepended before whatever was here before.
@@ -272,8 +278,8 @@ class Screen(object):
                 row[x] = char_cache[cell.char, prepend_style + cell.style + append_style]
 
 
-class WritePosition(object):
-    def __init__(self, xpos, ypos, width, height):
+class WritePosition:
+    def __init__(self, xpos: int, ypos: int, width: int, height: int) -> None:
         assert height >= 0
         assert width >= 0
         # xpos and ypos can be negative. (A float can be partially visible.)

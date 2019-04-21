@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from prompt_toolkit.application.current import get_app
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.key_binding.key_bindings import KeyBindings
@@ -23,7 +21,7 @@ __all__ = [
 ]
 
 
-class MenuContainer(object):
+class MenuContainer:
     """
     :param floats: List of extra Float objects to display.
     :param menu_items: List of `MenuItem` objects.
@@ -297,7 +295,7 @@ class MenuContainer(object):
         return self.container
 
 
-class MenuItem(object):
+class MenuItem:
     def __init__(self, text='', handler=None, children=None, shortcut=None,
                  disabled=False):
         self.text = text

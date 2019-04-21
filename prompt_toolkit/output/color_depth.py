@@ -1,6 +1,5 @@
-from __future__ import unicode_literals
-
 import os
+from enum import Enum
 
 from prompt_toolkit.utils import is_windows
 
@@ -9,7 +8,7 @@ __all__ = [
 ]
 
 
-class ColorDepth(object):
+class ColorDepth(Enum):
     """
     Possible color depth values for the output.
     """
@@ -31,10 +30,8 @@ class ColorDepth(object):
     DEFAULT = DEPTH_8_BIT
     TRUE_COLOR = DEPTH_24_BIT
 
-    _ALL = [DEPTH_1_BIT, DEPTH_4_BIT, DEPTH_8_BIT, DEPTH_24_BIT]
-
     @classmethod
-    def default(cls, term=''):
+    def default(cls, term: str = '') -> ColorDepth:
         """
         If the user doesn't specify a color depth, use this as a default.
         """
@@ -49,7 +46,9 @@ class ColorDepth(object):
             return cls.DEPTH_4_BIT
 
         # Check the `PROMPT_TOOLKIT_COLOR_DEPTH` environment variable.
-        if os.environ.get('PROMPT_TOOLKIT_COLOR_DEPTH') in cls._ALL:
-            return os.environ['PROMPT_TOOLKIT_COLOR_DEPTH']
+        all_values = [i.value for i in ColorDepth]
+
+        if os.environ.get('PROMPT_TOOLKIT_COLOR_DEPTH') in all_values:
+            return cls(os.environ['PROMPT_TOOLKIT_COLOR_DEPTH'])
 
         return cls.DEPTH_8_BIT

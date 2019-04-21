@@ -2,13 +2,9 @@
 Renders the command line on the console.
 (Redraws parts of the input line that were changed.)
 """
-from __future__ import unicode_literals
-
 import threading
 import time
 from collections import deque
-
-from six.moves import range
 
 from prompt_toolkit.eventloop import (
     From,
@@ -257,14 +253,14 @@ class _StyleStringToAttrsCache(dict):
         return attrs
 
 
-class CPR_Support(object):
+class CPR_Support:
     " Enum: whether or not CPR is supported. "
     SUPPORTED = 'SUPPORTED'
     NOT_SUPPORTED = 'NOT_SUPPORTED'
     UNKNOWN = 'UNKNOWN'
 
 
-class Renderer(object):
+class Renderer:
     """
     Typical usage:
 

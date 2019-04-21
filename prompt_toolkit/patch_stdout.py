@@ -17,10 +17,9 @@ Usage::
 Multiple applications can run in the body of the context manager, one after the
 other.
 """
-from __future__ import unicode_literals
-
 import sys
 import threading
+from typing import TextIO, List, cast
 from contextlib import contextmanager
 
 from .application import run_in_terminal
@@ -33,7 +32,7 @@ __all__ = [
 
 
 @contextmanager
-def patch_stdout(raw=False):
+def patch_stdout(raw: bool = False):
     """
     Replace `sys.stdout` by an :class:`_StdoutProxy` instance.
 
@@ -45,7 +44,7 @@ def patch_stdout(raw=False):
     :param raw: (`bool`) When True, vt100 terminal escape sequences are not
                 removed/escaped.
     """
-    proxy = StdoutProxy(raw=raw)
+    proxy = cast(TextIO, StdoutProxy(raw=raw))
 
     original_stdout = sys.stdout
     original_stderr = sys.stderr
@@ -64,26 +63,25 @@ def patch_stdout(raw=False):
         sys.stderr = original_stderr
 
 
-class StdoutProxy(object):
+class StdoutProxy:
     """
     Proxy object for stdout which captures everything and prints output above
     the current application.
     """
-    def __init__(self, raw=False, original_stdout=None):
-        assert isinstance(raw, bool)
+    def __init__(self, raw: bool = False, original_stdout=None) -> None:
         original_stdout = original_stdout or sys.__stdout__
 
         self.original_stdout = original_stdout
 
         self._lock = threading.RLock()
         self._raw = raw
-        self._buffer = []
+        self._buffer: List[str] = []
 
         # errors/encoding attribute for compatibility with sys.__stdout__.
         self.errors = original_stdout.errors
         self.encoding = original_stdout.encoding
 
-    def _write_and_flush(self, text):
+    def _write_and_flush(self, text: str) -> None:
         """
         Write the given text to stdout and flush.
         If an application is running, use `run_in_terminal`.
@@ -93,11 +91,11 @@ class StdoutProxy(object):
             # display.
             return
 
-        def write_and_flush():
+        def write_and_flush() -> None:
             self.original_stdout.write(text)
             self.original_stdout.flush()
 
-        def write_and_flush_in_loop():
+        def write_and_flush_in_loop() -> None:
             # If an application is running, use `run_in_terminal`, otherwise
             # call it directly.
             run_in_terminal(write_and_flush, in_executor=False)
@@ -106,7 +104,7 @@ class StdoutProxy(object):
         # another thread.
         get_event_loop().call_from_executor(write_and_flush_in_loop)
 
-    def _write(self, data):
+    def _write(self, data: str) -> None:
         """
         Note: print()-statements cause to multiple write calls.
               (write('line') and write('\n')). Of course we don't want to call
@@ -129,23 +127,25 @@ class StdoutProxy(object):
             # Otherwise, cache in buffer.
             self._buffer.append(data)
 
-    def _flush(self):
+    def _flush(self) -> None:
         text = ''.join(self._buffer)
         self._buffer = []
         self._write_and_flush(text)
 
-    def write(self, data):
+    def write(self, data: str) -> int:
         with self._lock:
             self._write(data)
 
-    def flush(self):
+        return len(data)  # Pretend everything was written.
+
+    def flush(self) -> None:
         """
         Flush buffered output.
         """
         with self._lock:
             self._flush()
 
-    def fileno(self):
+    def fileno(self) -> int:
         """
         Return file descriptor.
         """

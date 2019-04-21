@@ -14,8 +14,6 @@ Remarks:
 Limitations:
 - Lookahead is not supported.
 """
-from __future__ import unicode_literals
-
 import re
 
 __all__ = [
@@ -29,7 +27,7 @@ __all__ = [
 ]
 
 
-class Node(object):
+class Node:
     """
     Base class for all the grammar nodes.
     (You don't initialize this one.)

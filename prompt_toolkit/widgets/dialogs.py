@@ -1,8 +1,6 @@
 """
 Collection of reusable components for building full screen applications.
 """
-from __future__ import unicode_literals
-
 from prompt_toolkit.filters import has_completions, has_focus
 from prompt_toolkit.formatted_text import is_formatted_text
 from prompt_toolkit.key_binding.bindings.focus import (
@@ -20,7 +18,7 @@ __all__ = [
 ]
 
 
-class Dialog(object):
+class Dialog:
     """
     Simple dialog window. This is the base for input dialogs, message dialogs
     and confirmation dialogs.

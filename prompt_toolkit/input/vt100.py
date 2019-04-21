@@ -1,13 +1,13 @@
-from __future__ import unicode_literals
-
 import contextlib
 import io
 import os
 import sys
 import termios
 import tty
+from typing import Dict, Any, Set, Callable, ContextManager, List
 
 from ..eventloop import get_event_loop
+from ..key_binding import KeyPress
 from .base import Input
 from .posix_utils import PosixStdinReader
 from .vt100_parser import Vt100Parser
@@ -24,10 +24,11 @@ class Vt100Input(Input):
     Vt100 input for Posix systems.
     (This uses a posix file descriptor that can be registered in the event loop.)
     """
-    _fds_not_a_terminal = set()  # For the error messages. Only display "Input
-                                 # is not a terminal" once per file descriptor.
+    # For the error messages. Only display "Input is not a terminal" once per
+    # file descriptor.
+    _fds_not_a_terminal: Set[int] = set()
 
-    def __init__(self, stdin):
+    def __init__(self, stdin) -> None:
         # Test whether the given input object has a file descriptor.
         # (Idle reports stdin to be a TTY, but fileno() is not implemented.)
         try:
@@ -60,33 +61,32 @@ class Vt100Input(Input):
         # underlying file is closed, so that `typeahead_hash()` keeps working.
         self._fileno = stdin.fileno()
 
-        self._buffer = []  # Buffer to collect the Key objects.
+        self._buffer: List[KeyPress] = []  # Buffer to collect the Key objects.
         self.stdin_reader = PosixStdinReader(self._fileno)
         self.vt100_parser = Vt100Parser(
-            lambda key: self._buffer.append(key))
+            lambda key_press: self._buffer.append(key_press))
 
     @property
-    def responds_to_cpr(self):
+    def responds_to_cpr(self) -> bool:
         # When the input is a tty, we assume that CPR is supported.
         # It's not when the input is piped from Pexpect.
         return self.stdin.isatty()
 
-    def attach(self, input_ready_callback):
+    def attach(self, input_ready_callback: Callable) -> ContextManager:
         """
         Return a context manager that makes this input active in the current
         event loop.
         """
-        assert callable(input_ready_callback)
         return _attached_input(self, input_ready_callback)
 
-    def detach(self):
+    def detach(self) -> ContextManager:
         """
         Return a context manager that makes sure that this input is not active
         in the current event loop.
         """
         return _detached_input(self)
 
-    def read_keys(self):
+    def read_keys(self) -> List[KeyPress]:
         " Read list of KeyPress. "
         # Read text from stdin.
         data = self.stdin_reader.read()
@@ -99,7 +99,7 @@ class Vt100Input(Input):
         self._buffer = []
         return result
 
-    def flush_keys(self):
+    def flush_keys(self) -> List[KeyPress]:
         """
         Flush pending keys and return them.
         (Used for flushing the 'escape' key.)
@@ -114,23 +114,23 @@ class Vt100Input(Input):
         return result
 
     @property
-    def closed(self):
+    def closed(self) -> bool:
         return self.stdin_reader.closed
 
-    def raw_mode(self):
+    def raw_mode(self) -> ContextManager:
         return raw_mode(self.stdin.fileno())
 
-    def cooked_mode(self):
+    def cooked_mode(self) -> ContextManager:
         return cooked_mode(self.stdin.fileno())
 
-    def fileno(self):
+    def fileno(self) -> int:
         return self.stdin.fileno()
 
-    def typeahead_hash(self):
+    def typeahead_hash(self) -> str:
         return 'fd-%s' % (self._fileno, )
 
 
-_current_callbacks = {}  # (loop, fd) -> current callback
+_current_callbacks: Dict[Any, int] = {}  # (loop, fd) -> current callback
 
 
 @contextlib.contextmanager
@@ -178,7 +178,7 @@ def _detached_input(input):
             _current_callbacks[loop, fd] = previous
 
 
-class raw_mode(object):
+class raw_mode:
     """
     ::
 

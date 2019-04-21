@@ -38,8 +38,6 @@ Partial matches are possible::
     m.variables().get('operator2')  # Returns "add"
 
 """
-from __future__ import unicode_literals
-
 import re
 
 from six.moves import range
@@ -66,7 +64,7 @@ __all__ = [
 _INVALID_TRAILING_INPUT = 'invalid_trailing'
 
 
-class _CompiledGrammar(object):
+class _CompiledGrammar:
     """
     Compiles a grammar. This will take the parse tree of a regular expression
     and compile the grammar.
@@ -270,7 +268,7 @@ class _CompiledGrammar(object):
                 return Match(string, matches, self._group_names_to_nodes, self.unescape_funcs)
 
 
-class Match(object):
+class Match:
     """
     :param string: The input string.
     :param re_matches: List of (compiled_re_pattern, re_match) tuples.
@@ -351,7 +349,7 @@ class Match(object):
                 yield MatchVariable(varname, value, (reg[0], reg[1]))
 
 
-class Variables(object):
+class Variables:
     def __init__(self, tuples):
         #: List of (varname, value, slice) tuples.
         self._tuples = tuples
@@ -378,7 +376,7 @@ class Variables(object):
             yield MatchVariable(varname, value, slice)
 
 
-class MatchVariable(object):
+class MatchVariable:
     """
     Represents a match of a variable in the grammar.
 

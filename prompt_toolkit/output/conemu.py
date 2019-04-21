@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from prompt_toolkit.renderer import Output
 
 from .vt100 import Vt100_Output
@@ -10,7 +8,7 @@ __all__ = [
 ]
 
 
-class ConEmuOutput(object):
+class ConEmuOutput:
     """
     ConEmu (Windows) output abstraction.
 

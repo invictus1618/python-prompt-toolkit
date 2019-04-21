@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from prompt_toolkit.styles.pygments import pygments_token_to_classname
 
 from .base import FormattedText
@@ -9,7 +7,7 @@ __all__ = [
 ]
 
 
-class PygmentsTokens(object):
+class PygmentsTokens:
     """
     Turn a pygments token list into a list of prompt_toolkit text fragments
     (``(style_str, text)`` tuples).

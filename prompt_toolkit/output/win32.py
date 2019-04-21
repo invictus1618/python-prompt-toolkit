@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import os
 from ctypes import (
     ArgumentError,
@@ -12,11 +10,10 @@ from ctypes import (
     windll,
 )
 from ctypes.wintypes import DWORD
-
-import six
+from typing import Dict, List, Tuple
 
 from prompt_toolkit.renderer import Output
-from prompt_toolkit.styles import ANSI_COLOR_NAMES
+from prompt_toolkit.styles import ANSI_COLOR_NAMES, Attrs
 from prompt_toolkit.utils import get_cwidth
 from prompt_toolkit.win32_types import (
     CONSOLE_SCREEN_BUFFER_INFO,
@@ -102,21 +99,21 @@ class Win32Output(Output):
         if _DEBUG_RENDER_OUTPUT:
             self.LOG = open(_DEBUG_RENDER_OUTPUT_FILENAME, 'ab')
 
-    def fileno(self):
+    def fileno(self) -> int:
         " Return file descriptor. "
         return self.stdout.fileno()
 
-    def encoding(self):
+    def encoding(self) -> str:
         " Return encoding used for stdout. "
         return self.stdout.encoding
 
-    def write(self, data):
+    def write(self, data: str) -> None:
         if self._hidden:
             data = ' ' * get_cwidth(data)
 
         self._buffer.append(data)
 
-    def write_raw(self, data):
+    def write_raw(self, data: str) -> None:
         " For win32, there is no difference between write and write_raw. "
         self.write(data)
 
@@ -193,17 +190,16 @@ class Win32Output(Output):
         else:
             raise NoConsoleScreenBufferError
 
-    def set_title(self, title):
+    def set_title(self, title: str) -> None:
         """
         Set terminal title.
         """
-        assert isinstance(title, six.text_type)
         self._winapi(windll.kernel32.SetConsoleTitleW, title)
 
-    def clear_title(self):
+    def clear_title(self) -> None:
         self._winapi(windll.kernel32.SetConsoleTitleW, '')
 
-    def erase_screen(self):
+    def erase_screen(self) -> None:
         start = COORD(0, 0)
         sbinfo = self.get_win32_screen_buffer_info()
         length = sbinfo.dwSize.X * sbinfo.dwSize.Y
@@ -211,7 +207,7 @@ class Win32Output(Output):
         self.cursor_goto(row=0, column=0)
         self._erase(start, length)
 
-    def erase_down(self):
+    def erase_down(self) -> None:
         sbinfo = self.get_win32_screen_buffer_info()
         size = sbinfo.dwSize
 
@@ -220,7 +216,7 @@ class Win32Output(Output):
 
         self._erase(start, length)
 
-    def erase_end_of_line(self):
+    def erase_end_of_line(self) -> None:
         """
         """
         sbinfo = self.get_win32_screen_buffer_info()
@@ -242,66 +238,66 @@ class Win32Output(Output):
                      self.hconsole, sbinfo.wAttributes, length, _coord_byval(start),
                      byref(chars_written))
 
-    def reset_attributes(self):
+    def reset_attributes(self) -> None:
         " Reset the console foreground/background color. "
         self._winapi(windll.kernel32.SetConsoleTextAttribute, self.hconsole,
                      self.default_attrs)
         self._hidden = False
 
-    def set_attributes(self, attrs, color_depth):
+    def set_attributes(self, attrs: Attrs, color_depth: ColorDepth) -> None:
         fgcolor, bgcolor, bold, underline, italic, blink, reverse, self._hidden = attrs
 
         # Start from the default attributes.
-        attrs = self.default_attrs
+        win_attrs: int = self.default_attrs
 
         if color_depth != ColorDepth.DEPTH_1_BIT:
             # Override the last four bits: foreground color.
             if fgcolor:
-                attrs = attrs & ~0xf
-                attrs |= self.color_lookup_table.lookup_fg_color(fgcolor)
+                win_attrs = win_attrs & ~0xf
+                win_attrs |= self.color_lookup_table.lookup_fg_color(fgcolor)
 
             # Override the next four bits: background color.
             if bgcolor:
-                attrs = attrs & ~0xf0
-                attrs |= self.color_lookup_table.lookup_bg_color(bgcolor)
+                win_attrs = win_attrs & ~0xf0
+                win_attrs |= self.color_lookup_table.lookup_bg_color(bgcolor)
 
         # Reverse: swap these four bits groups.
         if reverse:
-            attrs = (attrs & ~0xff) | ((attrs & 0xf) << 4) | ((attrs & 0xf0) >> 4)
+            win_attrs = (win_attrs & ~0xff) | ((win_attrs & 0xf) << 4) | ((win_attrs & 0xf0) >> 4)
 
-        self._winapi(windll.kernel32.SetConsoleTextAttribute, self.hconsole, attrs)
+        self._winapi(windll.kernel32.SetConsoleTextAttribute, self.hconsole, win_attrs)
 
-    def disable_autowrap(self):
+    def disable_autowrap(self) -> None:
         # Not supported by Windows.
         pass
 
-    def enable_autowrap(self):
+    def enable_autowrap(self) -> None:
         # Not supported by Windows.
         pass
 
-    def cursor_goto(self, row=0, column=0):
+    def cursor_goto(self, row: int = 0, column: int = 0) -> None:
         pos = COORD(x=column, y=row)
         self._winapi(windll.kernel32.SetConsoleCursorPosition, self.hconsole, _coord_byval(pos))
 
-    def cursor_up(self, amount):
+    def cursor_up(self, amount: int) -> None:
         sr = self.get_win32_screen_buffer_info().dwCursorPosition
         pos = COORD(sr.X, sr.Y - amount)
         self._winapi(windll.kernel32.SetConsoleCursorPosition, self.hconsole, _coord_byval(pos))
 
-    def cursor_down(self, amount):
+    def cursor_down(self, amount: int) -> None:
         self.cursor_up(-amount)
 
-    def cursor_forward(self, amount):
+    def cursor_forward(self, amount: int) -> None:
         sr = self.get_win32_screen_buffer_info().dwCursorPosition
 #        assert sr.X + amount >= 0, 'Negative cursor position: x=%r amount=%r' % (sr.X, amount)
 
         pos = COORD(max(0, sr.X + amount), sr.Y)
         self._winapi(windll.kernel32.SetConsoleCursorPosition, self.hconsole, _coord_byval(pos))
 
-    def cursor_backward(self, amount):
+    def cursor_backward(self, amount: int) -> None:
         self.cursor_forward(-amount)
 
-    def flush(self):
+    def flush(self) -> None:
         """
         Write to output stream and flush.
         """
@@ -329,11 +325,11 @@ class Win32Output(Output):
 
         self._buffer = []
 
-    def get_rows_below_cursor_position(self):
+    def get_rows_below_cursor_position(self) -> int:
         info = self.get_win32_screen_buffer_info()
         return info.srWindow.Bottom - info.dwCursorPosition.Y + 1
 
-    def scroll_buffer_to_prompt(self):
+    def scroll_buffer_to_prompt(self) -> None:
         """
         To be called before drawing the prompt. This should scroll the console
         to left, with the cursor at the bottom (if possible).
@@ -361,7 +357,7 @@ class Win32Output(Output):
         # Scroll API
         self._winapi(windll.kernel32.SetConsoleWindowInfo, self.hconsole, True, byref(result))
 
-    def enter_alternate_screen(self):
+    def enter_alternate_screen(self) -> None:
         """
         Go to alternate screen buffer.
         """
@@ -377,7 +373,7 @@ class Win32Output(Output):
             self.hconsole = handle
             self._in_alternate_screen = True
 
-    def quit_alternate_screen(self):
+    def quit_alternate_screen(self) -> None:
         """
         Make stdout again the active buffer.
         """
@@ -388,7 +384,7 @@ class Win32Output(Output):
             self.hconsole = stdout
             self._in_alternate_screen = False
 
-    def enable_mouse_support(self):
+    def enable_mouse_support(self) -> None:
         ENABLE_MOUSE_INPUT = 0x10
         handle = windll.kernel32.GetStdHandle(STD_INPUT_HANDLE)
 
@@ -396,7 +392,7 @@ class Win32Output(Output):
         self._winapi(windll.kernel32.GetConsoleMode, handle, pointer(original_mode))
         self._winapi(windll.kernel32.SetConsoleMode, handle, original_mode.value | ENABLE_MOUSE_INPUT)
 
-    def disable_mouse_support(self):
+    def disable_mouse_support(self) -> None:
         ENABLE_MOUSE_INPUT = 0x10
         handle = windll.kernel32.GetStdHandle(STD_INPUT_HANDLE)
 
@@ -404,14 +400,14 @@ class Win32Output(Output):
         self._winapi(windll.kernel32.GetConsoleMode, handle, pointer(original_mode))
         self._winapi(windll.kernel32.SetConsoleMode, handle, original_mode.value & ~ ENABLE_MOUSE_INPUT)
 
-    def hide_cursor(self):
+    def hide_cursor(self) -> None:
         pass
 
-    def show_cursor(self):
+    def show_cursor(self) -> None:
         pass
 
     @classmethod
-    def win32_refresh_window(cls):
+    def win32_refresh_window(cls) -> None:
         """
         Call win32 API to refresh the whole Window.
 
@@ -450,7 +446,7 @@ class BACKGROUND_COLOR:
     INTENSITY = 0x0080  # Background color is intensified.
 
 
-def _create_ansi_color_dict(color_cls):
+def _create_ansi_color_dict(color_cls) -> Dict[str, int]:
     " Create a table that maps the 16 named ansi colors to their Windows code. "
     return {
         'ansidefault':     color_cls.BLACK,
@@ -484,16 +480,18 @@ assert set(FG_ANSI_COLORS) == set(ANSI_COLOR_NAMES)
 assert set(BG_ANSI_COLORS) == set(ANSI_COLOR_NAMES)
 
 
-class ColorLookupTable(object):
+class ColorLookupTable:
     """
     Inspired by pygments/formatters/terminal256.py
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self._win32_colors = self._build_color_table()
-        self.best_match = {}  # Cache
+
+        # Cache (map color string to foreground and background code).
+        self.best_match: Dict[str, Tuple[int, int]]  = {}
 
     @staticmethod
-    def _build_color_table():
+    def _build_color_table() -> List[Tuple[int, int, int, int, int]]:
         """
         Build an RGB-to-256 color conversion table
         """
@@ -521,7 +519,7 @@ class ColorLookupTable(object):
             (0xff, 0xff, 0xff, FG.GRAY | FG.INTENSITY, BG.GRAY | BG.INTENSITY),
         ]
 
-    def _closest_color(self, r, g, b):
+    def _closest_color(self, r: int, g: int, b: int) -> Tuple[int, int]:
         distance = 257 * 257 * 3  # "infinity" (>distance from #000000 to #ffffff)
         fg_match = 0
         bg_match = 0
@@ -539,7 +537,7 @@ class ColorLookupTable(object):
                 distance = d
         return fg_match, bg_match
 
-    def _color_indexes(self, color):
+    def _color_indexes(self, color: str) -> Tuple[int, int]:
         indexes = self.best_match.get(color, None)
         if indexes is None:
             try:
@@ -554,7 +552,7 @@ class ColorLookupTable(object):
             self.best_match[color] = indexes
         return indexes
 
-    def lookup_fg_color(self, fg_color):
+    def lookup_fg_color(self, fg_color: str) -> int:
         """
         Return the color for use in the
         `windll.kernel32.SetConsoleTextAttribute` API call.
@@ -567,7 +565,7 @@ class ColorLookupTable(object):
         else:
             return self._color_indexes(fg_color)[0]
 
-    def lookup_bg_color(self, bg_color):
+    def lookup_bg_color(self, bg_color: str) -> int:
         """
         Return the color for use in the
         `windll.kernel32.SetConsoleTextAttribute` API call.

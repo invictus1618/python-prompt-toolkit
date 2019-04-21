@@ -24,8 +24,6 @@ Example::
         s = PromptSession()
         result = s.prompt('Say something: ')
 """
-from __future__ import unicode_literals
-
 import contextlib
 import threading
 import time
@@ -184,7 +182,7 @@ class CompleteStyle:
     READLINE_LIKE = 'READLINE_LIKE'
 
 
-class PromptSession(object):
+class PromptSession:
     """
     PromptSession for a prompt application, which can be used as a GNU Readline
     replacement.

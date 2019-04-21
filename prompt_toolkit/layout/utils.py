@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+from prompt_toolkit.formatted_text import StyleAndTextTuples
 
 __all__ = [
     'explode_text_fragments',
@@ -38,7 +38,7 @@ class _ExplodedList(list):
         super(_ExplodedList, self).__setitem__(index, value)
 
 
-def explode_text_fragments(fragments):
+def explode_text_fragments(fragments: StyleAndTextTuples) -> _ExplodedList:
     """
     Turn a list of (style_str, text) tuples into another list where each string is
     exactly one character.

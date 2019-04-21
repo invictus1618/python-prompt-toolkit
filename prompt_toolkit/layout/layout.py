@@ -1,9 +1,7 @@
 """
 Wrapper for the layout.
 """
-from __future__ import unicode_literals
-
-import six
+from typing import Iterable, List, Optional
 
 from prompt_toolkit.buffer import Buffer
 
@@ -17,7 +15,7 @@ __all__ = [
 ]
 
 
-class Layout(object):
+class Layout:
     """
     The layout for a prompt_toolkit
     :class:`~prompt_toolkit.application.Application`.
@@ -66,7 +64,7 @@ class Layout(object):
             if isinstance(item, Window):
                 yield item
 
-    def find_all_controls(self):
+    def find_all_controls(self) -> Iterable[UIControl]:
         for container in self.find_all_windows():
             yield container.content
 
@@ -84,7 +82,7 @@ class Layout(object):
           focusable :class:`.Window` of the container.
         """
         # BufferControl by buffer name.
-        if isinstance(value, six.text_type):
+        if isinstance(value, str):
             for control in self.find_all_controls():
                 if isinstance(control, BufferControl) and control.buffer.name == value:
                     self.focus(control)
@@ -148,7 +146,7 @@ class Layout(object):
         Check whether the given control has the focus.
         :param value: :class:`.UIControl` or :class:`.Window` instance.
         """
-        if isinstance(value, six.text_type):
+        if isinstance(value, str):
             if self.current_buffer is None:
                 return False
             return self.current_buffer.name == value
@@ -169,19 +167,17 @@ class Layout(object):
                 return False
 
     @property
-    def current_control(self):
+    def current_control(self) -> UIControl:
         """
         Get the :class:`.UIControl` to currently has the focus.
         """
         return self._stack[-1].content
 
     @current_control.setter
-    def current_control(self, control):
+    def current_control(self, control: UIControl) -> None:
         """
         Set the :class:`.UIControl` to receive the focus.
         """
-        assert isinstance(control, UIControl)
-
         for window in self.find_all_windows():
             if window.content == control:
                 self.current_window = window
@@ -190,27 +186,26 @@ class Layout(object):
         raise ValueError('Control not found in the user interface.')
 
     @property
-    def current_window(self):
+    def current_window(self) -> Window:
         " Return the :class:`.Window` object that is currently focused. "
         return self._stack[-1]
 
     @current_window.setter
-    def current_window(self, value):
+    def current_window(self, value: Window):
         " Set the :class:`.Window` object to be currently focused. "
-        assert isinstance(value, Window)
         self._stack.append(value)
 
     @property
-    def is_searching(self):
+    def is_searching(self) -> bool:
         " True if we are searching right now. "
         return self.current_control in self.search_links
 
     @property
-    def search_target_buffer_control(self):
+    def search_target_buffer_control(self) -> BufferControl:
         " Return the :class:`.BufferControl` in which we are searching or `None`. "
         return self.search_links.get(self.current_control)
 
-    def get_focusable_windows(self):
+    def get_focusable_windows(self) -> Iterable[Window]:
         """
         Return all the :class:`.Window` objects which are focusable (in the
         'modal' area).
@@ -219,7 +214,7 @@ class Layout(object):
             if isinstance(w, Window) and w.content.is_focusable():
                 yield w
 
-    def get_visible_focusable_windows(self):
+    def get_visible_focusable_windows(self) -> List[Window]:
         """
         Return a list of :class:`.Window` objects that are focusable.
         """
@@ -229,15 +224,16 @@ class Layout(object):
         return [w for w in self.get_focusable_windows() if w in visible_windows]
 
     @property
-    def current_buffer(self):
+    def current_buffer(self) -> Optional[Buffer]:
         """
         The currently focused :class:`~.Buffer` or `None`.
         """
         ui_control = self.current_control
         if isinstance(ui_control, BufferControl):
             return ui_control.buffer
+        return None
 
-    def get_buffer_by_name(self, buffer_name):
+    def get_buffer_by_name(self, buffer_name: str) -> Optional[Buffer]:
         """
         Look in the layout for a buffer with the given name.
         Return `None` when nothing was found.
@@ -246,9 +242,10 @@ class Layout(object):
             if isinstance(w, Window) and isinstance(w.content, BufferControl):
                 if w.content.buffer.name == buffer_name:
                     return w.content.buffer
+        return None
 
     @property
-    def buffer_has_focus(self):
+    def buffer_has_focus(self) -> bool:
         """
         Return `True` if the currently focused control is a
         :class:`.BufferControl`. (For instance, used to determine whether the
@@ -258,7 +255,7 @@ class Layout(object):
         return isinstance(ui_control, BufferControl)
 
     @property
-    def previous_control(self):
+    def previous_control(self) -> UIControl:
         """
         Get the :class:`.UIControl` to previously had the focus.
         """
@@ -267,14 +264,14 @@ class Layout(object):
         except IndexError:
             return self._stack[-1].content
 
-    def focus_last(self):
+    def focus_last(self) -> None:
         """
         Give the focus to the last focused control.
         """
         if len(self._stack) > 1:
             self._stack = self._stack[:-1]
 
-    def focus_next(self):
+    def focus_next(self) -> None:
         """
         Focus the next visible/focusable Window.
         """
@@ -290,7 +287,7 @@ class Layout(object):
 
             self.focus(windows[index])
 
-    def focus_previous(self):
+    def focus_previous(self) -> None:
         """
         Focus the previous visible/focusable Window.
         """

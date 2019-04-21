@@ -10,15 +10,15 @@ an :class:`.HTML` object, an :class:`.ANSI` object or a sequence of
 `(style_string, text)` tuples. The :func:`.to_formatted_text` conversion
 function takes any of these and turns all of them into such a tuple sequence.
 """
-from __future__ import unicode_literals
-
 from .ansi import ANSI
 from .base import (
+    AnyFormattedText,
     FormattedText,
     Template,
     is_formatted_text,
     merge_formatted_text,
     to_formatted_text,
+    StyleAndTextTuples,
 )
 from .html import HTML
 from .pygments import PygmentsTokens
@@ -31,11 +31,13 @@ from .utils import (
 
 __all__ = [
     # Base.
+    'AnyFormattedText',
     'to_formatted_text',
     'is_formatted_text',
     'Template',
     'merge_formatted_text',
     'FormattedText',
+    'StyleAndTextTuples',
 
     # HTML.
     'HTML',

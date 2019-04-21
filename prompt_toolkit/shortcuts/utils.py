@@ -1,5 +1,3 @@
-from __future__ import print_function, unicode_literals
-
 import six
 
 from prompt_toolkit.application import Application
@@ -164,7 +162,7 @@ def print_container(container, file=None):
     app.run(pre_run=exit_immediately)
 
 
-def clear():
+def clear() -> None:
     """
     Clear the screen.
     """
@@ -174,17 +172,15 @@ def clear():
     out.flush()
 
 
-def set_title(text):
+def set_title(text: str) -> None:
     """
     Set the terminal title.
     """
-    assert isinstance(text, six.text_type)
-
     output = get_default_output()
     output.set_title(text)
 
 
-def clear_title():
+def clear_title() -> None:
     """
     Erase the current title.
     """

@@ -1,8 +1,6 @@
 """
 Telnet server.
 """
-from __future__ import unicode_literals
-
 import inspect
 import socket
 import sys
@@ -74,7 +72,7 @@ def _is_coroutine(func):
     return False
 
 
-class _ConnectionStdout(object):
+class _ConnectionStdout:
     """
     Wrapper around socket which provides `write` and `flush` methods for the
     Vt100_Output output.
@@ -98,7 +96,7 @@ class _ConnectionStdout(object):
         self._buffer = []
 
 
-class TelnetConnection(object):
+class TelnetConnection:
     """
     Class that represents one Telnet connection.
     """
@@ -239,7 +237,7 @@ class TelnetConnection(object):
         self.vt100_output.flush()
 
 
-class TelnetServer(object):
+class TelnetServer:
     """
     Telnet server implementation.
     """

@@ -1,12 +1,12 @@
-from __future__ import unicode_literals
+from enum import Enum
 
 __all__ = [
-    'Keys',
+    'Key',
     'ALL_KEYS',
 ]
 
 
-class Keys(object):
+class Key(Enum):
     """
     List of keys for use in key bindings.
     """
@@ -112,8 +112,14 @@ class Keys(object):
     # (The key binding for this key should not do anything.)
     Ignore = '<ignore>'
 
+    # Some 'Key' aliases (for backwards-compatibility).
+    ControlSpace = ControlAt
+    Tab          = ControlI
+    Enter        = ControlM
+    Backspace    = ControlH
 
-ALL_KEYS = [getattr(Keys, k) for k in dir(Keys) if not k.startswith('_')]
+
+ALL_KEYS = [k.value for k in Key]
 
 
 # Aliases.
@@ -125,9 +131,6 @@ KEY_ALIASES = {
 }
 
 
-# The following should not end up in ALL_KEYS, but we still want them in Keys
-# for backwards-compatibility.
-Keys.ControlSpace = Keys.ControlAt
-Keys.Tab          = Keys.ControlI
-Keys.Enter        = Keys.ControlM
-Keys.Backspace    = Keys.ControlH
+# For backwards-compatibility. We renamed 'Keys' to Key, because enums are
+# singular by convention.
+Keys = Key

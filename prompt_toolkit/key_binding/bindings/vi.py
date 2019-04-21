@@ -1,11 +1,9 @@
 # pylint: disable=function-redefined
-from __future__ import unicode_literals
-
 import codecs
 import string
+from itertools import accumulate
 
 import six
-from six.moves import range
 
 from prompt_toolkit.application.current import get_app
 from prompt_toolkit.buffer import indent, reshape_text, unindent
@@ -42,37 +40,25 @@ from prompt_toolkit.selection import PasteMode, SelectionState, SelectionType
 from ..key_bindings import ConditionalKeyBindings, KeyBindings, KeyBindingsBase
 from .named_commands import get_by_name
 
-try:
-    from itertools import accumulate
-except ImportError:  # < Python 3.2
-    def accumulate(iterable):
-        " Super simple 'accumulate' implementation. "
-        total = 0
-        for item in iterable:
-            total += item
-            yield total
 
 __all__ = [
     'load_vi_bindings',
     'load_vi_search_bindings',
 ]
 
-if six.PY2:
-    ascii_lowercase = string.ascii_lowercase.decode('ascii')
-else:
-    ascii_lowercase = string.ascii_lowercase
+ascii_lowercase = string.ascii_lowercase
 
 vi_register_names = ascii_lowercase + '0123456789'
 
 
-class TextObjectType(object):
+class TextObjectType:
     EXCLUSIVE = 'EXCLUSIVE'
     INCLUSIVE = 'INCLUSIVE'
     LINEWISE = 'LINEWISE'
     BLOCK = 'BLOCK'
 
 
-class TextObject(object):
+class TextObject:
     """
     Return struct for functions wrapped in ``text_object``.
     Both `start` and `end` are relative to the current cursor position.

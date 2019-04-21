@@ -1,12 +1,9 @@
 """
 The base classes for the styling.
 """
-from __future__ import absolute_import, unicode_literals
-
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import namedtuple
-
-from six import with_metaclass
+from typing import List, Callable, Optional, Tuple
 
 __all__ = [
     'Attrs',
@@ -76,12 +73,13 @@ assert set(ANSI_COLOR_NAMES_ALIASES.values()).issubset(set(ANSI_COLOR_NAMES))
 assert not (set(ANSI_COLOR_NAMES_ALIASES.keys()) & set(ANSI_COLOR_NAMES))
 
 
-class BaseStyle(with_metaclass(ABCMeta, object)):
+class BaseStyle(metaclass=ABCMeta):
     """
     Abstract base class for prompt_toolkit styles.
     """
     @abstractmethod
-    def get_attrs_for_style_str(self, style_str, default=DEFAULT_ATTRS):
+    def get_attrs_for_style_str(
+            self, style_str: str, default: Attrs = DEFAULT_ATTRS) -> Attrs:
         """
         Return :class:`.Attrs` for the given style string.
 
@@ -91,7 +89,7 @@ class BaseStyle(with_metaclass(ABCMeta, object)):
         """
 
     @abstractproperty
-    def style_rules(self):
+    def style_rules(self) -> List[Tuple[str, str]]:
         """
         The list of style rules, used to create this style.
         (Required for `DynamicStyle` and `_MergedStyle` to work.)
@@ -111,14 +109,15 @@ class DummyStyle(BaseStyle):
     """
     A style that doesn't style anything.
     """
-    def get_attrs_for_style_str(self, style_str, default=DEFAULT_ATTRS):
+    def get_attrs_for_style_str(
+            self, style_str: str, default: Attrs = DEFAULT_ATTRS) -> Attrs:
         return default
 
     def invalidation_hash(self):
         return 1  # Always the same value.
 
     @property
-    def style_rules(self):
+    def style_rules(self) -> List[Tuple[str, str]]:
         return []
 
 
@@ -128,19 +127,18 @@ class DynamicStyle(BaseStyle):
 
     :param get_style: Callable that returns a :class:`.Style` instance.
     """
-    def __init__(self, get_style):
+    def __init__(self, get_style: Callable[[], Optional[BaseStyle]]):
         self.get_style = get_style
         self._dummy = DummyStyle()
 
     def get_attrs_for_style_str(self, style_str, default=DEFAULT_ATTRS):
         style = self.get_style() or self._dummy
 
-        assert isinstance(style, BaseStyle)
         return style.get_attrs_for_style_str(style_str, default)
 
     def invalidation_hash(self):
         return (self.get_style() or self._dummy).invalidation_hash()
 
     @property
-    def style_rules(self):
+    def style_rules(self) -> List[Tuple[str, str]]:
         return (self.get_style() or self._dummy).style_rules

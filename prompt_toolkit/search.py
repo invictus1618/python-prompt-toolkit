@@ -5,12 +5,10 @@ For the key bindings implementation with attached filters, check
 `prompt_toolkit.key_binding.bindings.search`. (Use these for new key bindings
 instead of calling these function directly.)
 """
-from __future__ import unicode_literals
-
-import six
+from enum import Enum
 
 from .application.current import get_app
-from .filters import is_searching, to_filter
+from .filters import is_searching, to_filter, FilterOrBool
 from .key_binding.vi_state import InputMode
 
 __all__ = [
@@ -20,14 +18,12 @@ __all__ = [
 ]
 
 
-class SearchDirection(object):
+class SearchDirection(Enum):
     FORWARD = 'FORWARD'
     BACKWARD = 'BACKWARD'
 
-    _ALL = [FORWARD, BACKWARD]
 
-
-class SearchState(object):
+class SearchState:
     """
     A search 'query', associated with a search field (like a SearchToolbar).
 
@@ -44,21 +40,19 @@ class SearchState(object):
     """
     __slots__ = ('text', 'direction', 'ignore_case')
 
-    def __init__(self, text='', direction=SearchDirection.FORWARD, ignore_case=False):
-        assert isinstance(text, six.text_type)
-        assert direction in (SearchDirection.FORWARD, SearchDirection.BACKWARD)
-
-        ignore_case = to_filter(ignore_case)
+    def __init__(self, text: str = '',
+                 direction: SearchDirection = SearchDirection.FORWARD,
+                 ignore_case: FilterOrBool = False) -> None:
 
         self.text = text
         self.direction = direction
-        self.ignore_case = ignore_case
+        self.ignore_case = to_filter(ignore_case)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '%s(%r, direction=%r, ignore_case=%r)' % (
             self.__class__.__name__, self.text, self.direction, self.ignore_case)
 
-    def __invert__(self):
+    def __invert__(self) -> 'SearchState':
         """
         Create a new SearchState where backwards becomes forwards and the other
         way around.
@@ -68,10 +62,12 @@ class SearchState(object):
         else:
             direction = SearchDirection.BACKWARD
 
-        return SearchState(text=self.text, direction=direction, ignore_case=self.ignore_case)
+        return SearchState(text=self.text, direction=direction,
+                           ignore_case=self.ignore_case)
 
 
-def start_search(buffer_control=None, direction=SearchDirection.FORWARD):
+def start_search(buffer_control=None,
+                 direction: SearchDirection = SearchDirection.FORWARD) -> None:
     """
     Start search through the given `buffer_control` using the
     `search_buffer_control`.
@@ -81,7 +77,6 @@ def start_search(buffer_control=None, direction=SearchDirection.FORWARD):
     """
     from prompt_toolkit.layout.controls import BufferControl
     assert buffer_control is None or isinstance(buffer_control, BufferControl)
-    assert direction in SearchDirection._ALL
 
     layout = get_app().layout
 
@@ -107,7 +102,7 @@ def start_search(buffer_control=None, direction=SearchDirection.FORWARD):
         get_app().vi_state.input_mode = InputMode.INSERT
 
 
-def stop_search(buffer_control=None):
+def stop_search(buffer_control=None) -> None:
     """
     Stop search through the given `buffer_control`.
     """
@@ -136,12 +131,11 @@ def stop_search(buffer_control=None):
     get_app().vi_state.input_mode = InputMode.NAVIGATION
 
 
-def do_incremental_search(direction, count=1):
+def do_incremental_search(direction: SearchDirection, count: int = 1) -> None:
     """
     Apply search, but keep search buffer focused.
     """
     assert is_searching()
-    assert direction in SearchDirection._ALL
 
     layout = get_app().layout
 

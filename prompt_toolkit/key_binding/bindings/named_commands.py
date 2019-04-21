@@ -3,8 +3,6 @@ Key bindings which are also known by GNU Readline by the given names.
 
 See: http://www.delorie.com/gnu/docs/readline/rlman_13.html
 """
-from __future__ import unicode_literals
-
 import six
 from six.moves import range
 

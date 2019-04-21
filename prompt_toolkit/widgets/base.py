@@ -12,8 +12,6 @@ container object.
     guarantees are made yet). The public API in
     `prompt_toolkit.shortcuts.dialogs` on the other hand is considered stable.
 """
-from __future__ import unicode_literals
-
 from functools import partial
 
 import six
@@ -91,7 +89,7 @@ class Border:
     BOTTOM_RIGHT = '\u2518'
 
 
-class TextArea(object):
+class TextArea:
     """
     A simple input field.
 
@@ -271,7 +269,7 @@ class TextArea(object):
         return self.window
 
 
-class Label(object):
+class Label:
     """
     Widget that displays the given text. It is not editable or focusable.
 
@@ -312,7 +310,7 @@ class Label(object):
         return self.window
 
 
-class Button(object):
+class Button:
     """
     Clickable button.
 
@@ -378,7 +376,7 @@ class Button(object):
         return self.window
 
 
-class Frame(object):
+class Frame:
     """
     Draw a border around any container, optionally with a title text.
 
@@ -455,7 +453,7 @@ class Frame(object):
         return self.container
 
 
-class Shadow(object):
+class Shadow:
     """
     Draw a shadow underneath/behind this container.
     (This applies `class:shadow` the the cells under the shadow. The Style
@@ -482,7 +480,7 @@ class Shadow(object):
         return self.container
 
 
-class Box(object):
+class Box:
     """
     Add padding around a container.
 
@@ -537,7 +535,7 @@ class Box(object):
         return self.container
 
 
-class Checkbox(object):
+class Checkbox:
     def __init__(self, text=''):
         assert is_formatted_text(text)
 
@@ -580,7 +578,7 @@ class Checkbox(object):
         return self.container
 
 
-class RadioList(object):
+class RadioList:
     """
     List of radio buttons. Only one can be checked at the same time.
 
@@ -698,7 +696,7 @@ class RadioList(object):
         return self.window
 
 
-class VerticalLine(object):
+class VerticalLine:
     """
     A simple vertical line with a width of 1.
     """
@@ -712,7 +710,7 @@ class VerticalLine(object):
         return self.window
 
 
-class HorizontalLine(object):
+class HorizontalLine:
     """
     A simple horizontal line with a height of 1.
     """
@@ -726,7 +724,7 @@ class HorizontalLine(object):
         return self.window
 
 
-class ProgressBar(object):
+class ProgressBar:
     def __init__(self):
         self._percentage = 60
 

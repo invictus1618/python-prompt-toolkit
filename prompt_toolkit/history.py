@@ -6,13 +6,10 @@ NOTE: Notice that there is no `DynamicHistory`. This doesn't work well, because
       when a history entry is loaded. This loading can be done asynchronously
       and making the history swappable would probably break this.
 """
-from __future__ import unicode_literals
-
 import datetime
 import os
 from abc import ABCMeta, abstractmethod
-
-from six import text_type, with_metaclass
+from typing import Iterable, List
 
 from .eventloop import (
     AsyncGeneratorItem,
@@ -32,16 +29,16 @@ __all__ = [
 ]
 
 
-class History(with_metaclass(ABCMeta, object)):
+class History(metaclass=ABCMeta):
     """
     Base ``History`` class.
 
     This also includes abstract methods for loading/storing history.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         # In memory storage for strings.
         self._loading = False
-        self._loaded_strings = []
+        self._loaded_strings: List[str] = []
         self._item_loaded = Event(self)
 
     def _start_loading(self):
@@ -51,7 +48,7 @@ class History(with_metaclass(ABCMeta, object)):
         This is only called once, because once the history is loaded, we don't
         have to load it again.
         """
-        def add_string(string):
+        def add_string(string: str) -> None:
             " Got one string from the asynchronous history generator. "
             self._loaded_strings.insert(0, string)
             self._item_loaded.fire()
@@ -66,23 +63,23 @@ class History(with_metaclass(ABCMeta, object)):
     # Methods expected by `Buffer`.
     #
 
-    def start_loading(self):
+    def start_loading(self) -> None:
         " Start loading the history. "
         if not self._loading:
             self._loading = True
             ensure_future(self._start_loading())
 
-    def get_item_loaded_event(self):
+    def get_item_loaded_event(self) -> Event:
         " Event which is triggered when a new item is loaded. "
         return self._item_loaded
 
-    def get_strings(self):
+    def get_strings(self) -> List[str]:
         """
         Get the strings from the history that are loaded so far.
         """
         return self._loaded_strings
 
-    def append_string(self, string):
+    def append_string(self, string: str) -> None:
         " Add string to the history. "
         self._loaded_strings.append(string)
         self.store_string(string)
@@ -92,7 +89,7 @@ class History(with_metaclass(ABCMeta, object)):
     #
 
     @abstractmethod
-    def load_history_strings(self):
+    def load_history_strings(self) -> Iterable[str]:
         """
         This should be a generator that yields `str` instances.
 
@@ -116,11 +113,10 @@ class History(with_metaclass(ABCMeta, object)):
         asynchronous generator.
         """
         for item in self.load_history_strings():
-            assert isinstance(item, text_type)
             yield AsyncGeneratorItem(item)
 
     @abstractmethod
-    def store_string(self, string):
+    def store_string(self, string: str) -> None:
         """
         Store the string in persistent storage.
         """
@@ -134,8 +130,7 @@ class ThreadedHistory(History):
     History entries are available as soon as they are loaded. We don't have to
     wait for everything to be loaded.
     """
-    def __init__(self, history=None):
-        assert isinstance(history, History), 'Got %r' % (history, )
+    def __init__(self, history: History) -> None:
         self.history = history
         super(ThreadedHistory, self).__init__()
 
@@ -149,13 +144,13 @@ class ThreadedHistory(History):
 
     # All of the following are proxied to `self.history`.
 
-    def load_history_strings(self):
+    def load_history_strings(self) -> Iterable[str]:
         return self.history.load_history_strings()
 
-    def store_string(self, string):
+    def store_string(self, string: str) -> None:
         self.history.store_string(string)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'ThreadedHistory(%r)' % (self.history, )
 
 
@@ -163,10 +158,10 @@ class InMemoryHistory(History):
     """
     :class:`.History` class that keeps a list of all strings in memory.
     """
-    def load_history_strings(self):
+    def load_history_strings(self) -> Iterable[str]:
         return []
 
-    def store_string(self, string):
+    def store_string(self, string: str) -> None:
         pass
 
 
@@ -174,13 +169,13 @@ class DummyHistory(History):
     """
     :class:`.History` object that doesn't remember anything.
     """
-    def load_history_strings(self):
+    def load_history_strings(self) -> Iterable[str]:
         return []
 
-    def store_string(self, string):
+    def store_string(self, string: str) -> None:
         pass
 
-    def append_string(self, string):
+    def append_string(self, string: str) -> None:
         # Don't remember this.
         pass
 
@@ -189,13 +184,13 @@ class FileHistory(History):
     """
     :class:`.History` class that stores all strings in a file.
     """
-    def __init__(self, filename):
+    def __init__(self, filename: str) -> None:
         self.filename = filename
         super(FileHistory, self).__init__()
 
-    def load_history_strings(self):
-        strings = []
-        lines = []
+    def load_history_strings(self) -> Iterable[str]:
+        strings: List[str] = []
+        lines: List[str] = []
 
         def add():
             if lines:
@@ -206,8 +201,8 @@ class FileHistory(History):
 
         if os.path.exists(self.filename):
             with open(self.filename, 'rb') as f:
-                for line in f:
-                    line = line.decode('utf-8')
+                for line_bytes in f:
+                    line = line_bytes.decode('utf-8')
 
                     if line.startswith('+'):
                         lines.append(line[1:])
@@ -220,7 +215,7 @@ class FileHistory(History):
         # Reverse the order, because newest items have to go first.
         return reversed(strings)
 
-    def store_string(self, string):
+    def store_string(self, string: str) -> None:
         # Save to file.
         with open(self.filename, 'ab') as f:
             def write(t):
