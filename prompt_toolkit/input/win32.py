@@ -4,9 +4,9 @@ import sys
 from contextlib import contextmanager
 from ctypes import pointer, windll
 from ctypes.wintypes import DWORD
-from typing import Callable, Dict, Optional, ContextManager, Iterable
+from typing import Callable, ContextManager, Dict, Iterable, Optional
 
-from prompt_toolkit.eventloop import get_event_loop, EventLoop
+from prompt_toolkit.eventloop import EventLoop, get_event_loop
 from prompt_toolkit.eventloop.win32 import wait_for_handles
 from prompt_toolkit.key_binding.key_processor import KeyPress
 from prompt_toolkit.keys import Keys

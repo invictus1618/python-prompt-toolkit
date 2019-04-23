@@ -3,7 +3,7 @@ The base classes for the styling.
 """
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import namedtuple
-from typing import List, Callable, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 __all__ = [
     'Attrs',
@@ -57,7 +57,7 @@ ANSI_COLOR_NAMES = [
 # Pygments). This is fixed now, but we still support the old names.
 
 # The table below maps the old aliases to the current names.
-ANSI_COLOR_NAMES_ALIASES = {
+ANSI_COLOR_NAMES_ALIASES: Dict[str, str] = {
     'ansidarkgray': 'ansibrightblack',
     'ansiteal': 'ansicyan',
     'ansiturquoise': 'ansibrightcyan',
@@ -97,7 +97,7 @@ class BaseStyle(metaclass=ABCMeta):
         return []
 
     @abstractmethod
-    def invalidation_hash(self):
+    def invalidation_hash(self) -> Any:
         """
         Invalidation hash for the style. When this changes over time, the
         renderer knows that something in the style changed, and that everything
@@ -113,7 +113,7 @@ class DummyStyle(BaseStyle):
             self, style_str: str, default: Attrs = DEFAULT_ATTRS) -> Attrs:
         return default
 
-    def invalidation_hash(self):
+    def invalidation_hash(self) -> Any:
         return 1  # Always the same value.
 
     @property
@@ -131,12 +131,13 @@ class DynamicStyle(BaseStyle):
         self.get_style = get_style
         self._dummy = DummyStyle()
 
-    def get_attrs_for_style_str(self, style_str, default=DEFAULT_ATTRS):
+    def get_attrs_for_style_str(
+            self, style_str: str, default: Attrs = DEFAULT_ATTRS) -> Attrs:
         style = self.get_style() or self._dummy
 
         return style.get_attrs_for_style_str(style_str, default)
 
-    def invalidation_hash(self):
+    def invalidation_hash(self) -> Any:
         return (self.get_style() or self._dummy).invalidation_hash()
 
     @property

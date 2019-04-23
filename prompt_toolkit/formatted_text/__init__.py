@@ -14,11 +14,12 @@ from .ansi import ANSI
 from .base import (
     AnyFormattedText,
     FormattedText,
+    StyleAndTextTuples,
+    StyleAndTextTuplesWithMouseHandlers,
     Template,
     is_formatted_text,
     merge_formatted_text,
     to_formatted_text,
-    StyleAndTextTuples,
 )
 from .html import HTML
 from .pygments import PygmentsTokens
@@ -38,6 +39,7 @@ __all__ = [
     'merge_formatted_text',
     'FormattedText',
     'StyleAndTextTuples',
+    'StyleAndTextTuplesWithMouseHandlers',
 
     # HTML.
     'HTML',

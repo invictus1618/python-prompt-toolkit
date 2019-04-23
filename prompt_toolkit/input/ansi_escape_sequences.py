@@ -2,7 +2,8 @@
 Mappings from VT100 (ANSI) escape sequences to the corresponding prompt_toolkit
 keys.
 """
-from typing import Dict, Union, Tuple
+from typing import Dict, Tuple, Union
+
 from ..keys import Keys
 
 __all__ = [

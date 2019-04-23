@@ -1,6 +1,6 @@
 from typing import Dict
 
-from .base import Always, Filter, Never, FilterOrBool
+from .base import Always, Filter, FilterOrBool, Never
 
 __all__ = [
     'to_filter',

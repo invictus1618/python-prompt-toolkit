@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 from enum import Enum
 from functools import wraps
-from typing import Optional, Tuple, Callable, Iterable, List, Set
+from typing import Callable, Iterable, List, Optional, Set, Tuple
 
 from .application.current import get_app
 from .application.run_in_terminal import run_in_terminal
@@ -24,8 +24,14 @@ from .completion import (
     get_common_complete_suffix,
 )
 from .document import Document
-from .eventloop import From, Future, Return, consume_async_generator, ensure_future
-from .filters import to_filter, FilterOrBool
+from .eventloop import (
+    From,
+    Future,
+    Return,
+    consume_async_generator,
+    ensure_future,
+)
+from .filters import FilterOrBool, to_filter
 from .history import History, InMemoryHistory
 from .search import SearchDirection, SearchState
 from .selection import PasteMode, SelectionState, SelectionType

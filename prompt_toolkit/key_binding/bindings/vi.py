@@ -40,7 +40,6 @@ from prompt_toolkit.selection import PasteMode, SelectionState, SelectionType
 from ..key_bindings import ConditionalKeyBindings, KeyBindings, KeyBindingsBase
 from .named_commands import get_by_name
 
-
 __all__ = [
     'load_vi_bindings',
     'load_vi_search_bindings',

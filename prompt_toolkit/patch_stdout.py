@@ -19,8 +19,8 @@ other.
 """
 import sys
 import threading
-from typing import TextIO, List, cast
 from contextlib import contextmanager
+from typing import List, TextIO, cast
 
 from .application import run_in_terminal
 from .eventloop import get_event_loop

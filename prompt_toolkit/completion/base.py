@@ -1,13 +1,13 @@
 """
 """
 from abc import ABCMeta, abstractmethod
-from typing import Iterable, Callable, List, Optional
+from typing import Callable, Iterable, List, Optional
 
-from prompt_toolkit.formatted_text import AnyFormattedText
 from prompt_toolkit.eventloop import (
     AsyncGeneratorItem,
     generator_to_async_generator,
 )
+from prompt_toolkit.formatted_text import AnyFormattedText
 
 __all__ = [
     'Completion',

@@ -3,16 +3,22 @@ Container for the layout.
 (Containers can contain other containers or user interface controls.)
 """
 from abc import ABCMeta, abstractmethod
-from functools import partial
-from typing import Optional, Tuple, List, Callable, Union, Dict
 from enum import Enum
+from functools import partial
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from typing_extensions import Protocol
 
 from prompt_toolkit.application.current import get_app
 from prompt_toolkit.cache import SimpleCache
-from prompt_toolkit.filters import emacs_insert_mode, to_filter, vi_insert_mode, FilterOrBool
-from prompt_toolkit.formatted_text import to_formatted_text, AnyFormattedText
+from prompt_toolkit.data_structures import Point
+from prompt_toolkit.filters import (
+    FilterOrBool,
+    emacs_insert_mode,
+    to_filter,
+    vi_insert_mode,
+)
+from prompt_toolkit.formatted_text import AnyFormattedText, to_formatted_text
 from prompt_toolkit.formatted_text.utils import (
     fragment_list_to_text,
     fragment_list_width,
@@ -32,7 +38,7 @@ from .dimension import (
 )
 from .margins import Margin
 from .mouse_handlers import MouseHandlers
-from .screen import _CHAR_CACHE, Point, WritePosition, Screen
+from .screen import _CHAR_CACHE, Screen, WritePosition
 from .utils import explode_text_fragments
 
 try:
@@ -990,7 +996,7 @@ class WindowRenderInfo:
                  vertical_scroll: int,
                  window_width: int,
                  window_height: int,
-                 configured_scroll_offsets: ScrollOffsets,
+                 configured_scroll_offsets: 'ScrollOffsets',
                  visible_line_to_row_col: dict,
                  rowcol_to_yx: dict,
                  x_offset: int,
@@ -1035,7 +1041,7 @@ class WindowRenderInfo:
             return Point(x=x - self._x_offset, y=y - self._y_offset)
 
     @property
-    def applied_scroll_offsets(self) -> ScrollOffsets:
+    def applied_scroll_offsets(self) -> 'ScrollOffsets':
         """
         Return a :class:`.ScrollOffsets` instance that indicates the actual
         offset. This can be less than or equal to what's configured. E.g, when
@@ -1476,7 +1482,7 @@ class Window(Container):
             min=min_, max=max_,
             preferred=preferred, weight=dimension.weight)
 
-    def _get_ui_content(self, width, height) -> UIContent:
+    def _get_ui_content(self, width: int, height: int) -> UIContent:
         """
         Create a `UIContent` instance.
         """

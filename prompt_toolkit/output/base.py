@@ -3,10 +3,10 @@ Interface for an output.
 """
 from abc import ABCMeta, abstractmethod
 
-from prompt_toolkit.layout.screen import Size
+from prompt_toolkit.data_structures import Size
 from prompt_toolkit.styles import Attrs
 
-from .ColorDepth import ColorDepth
+from .color_depth import ColorDepth
 
 __all__ = [
     'Output',
@@ -141,6 +141,10 @@ class Output(metaclass=ABCMeta):
         Asks for a cursor position report (CPR).
         (VT100 only.)
         """
+
+    @abstractmethod
+    def get_size(self) -> Size:
+        " Return the size of the output window. "
 
     def bell(self) -> None:
         " Sound bell. "

@@ -1,9 +1,10 @@
-import six
-from typing import Union, Any, Callable, List, Tuple, Iterable
+from typing import Any, Callable, Iterable, List, Tuple, Union
+
 from typing_extensions import Protocol
 
 __all__ = [
     'StyleAndTextTuples',
+    'StyleAndTextTuplesWithMouseHandlers',
     'MagicFormattedText',
     'AnyFormattedText',
     'to_formatted_text',

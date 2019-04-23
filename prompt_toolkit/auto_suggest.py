@@ -12,11 +12,11 @@ then wrap the :class:`.AutoSuggest` instance into a
 :class:`.ThreadedAutoSuggest`.
 """
 from abc import ABCMeta, abstractmethod
-from typing import Optional, Union, Callable
+from typing import Callable, Optional, Union
 
-from .eventloop import Future, run_in_executor
-from .filters import to_filter, Filter
 from .document import Document
+from .eventloop import Future, run_in_executor
+from .filters import Filter, to_filter
 
 __all__ = [
     'Suggestion',

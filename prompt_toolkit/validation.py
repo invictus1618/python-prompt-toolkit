@@ -7,7 +7,7 @@ from typing import Callable, Optional
 
 from .document import Document
 from .eventloop import Future, run_in_executor
-from .filters import to_filter, FilterOrBool
+from .filters import FilterOrBool, to_filter
 
 __all__ = [
     'ConditionalValidator',

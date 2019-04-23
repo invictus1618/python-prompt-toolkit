@@ -1,12 +1,12 @@
 import re
 from collections import namedtuple
-from typing import Optional, Iterable, Tuple, Union, List, Callable
+from typing import Callable, Iterable, List, Optional, Tuple, Union
 
 from prompt_toolkit.document import Document
-from prompt_toolkit.filters import to_filter, FilterOrBool
+from prompt_toolkit.filters import FilterOrBool, to_filter
 from prompt_toolkit.formatted_text.base import StyleAndTextTuples
 
-from .base import Completer, Completion, CompleteEvent
+from .base import CompleteEvent, Completer, Completion
 from .word_completer import WordCompleter
 
 __all__ = [
@@ -93,7 +93,7 @@ class FuzzyCompleter(Completer):
                 best = min(matches, key=lambda m: (m.start(), len(m.group(1))))
                 fuzzy_matches.append(_FuzzyMatch(len(best.group(1)), best.start(), compl))
 
-        def sort_key(fuzzy_match: _FuzzyMatch) -> Tuple[int, int]:
+        def sort_key(fuzzy_match: '_FuzzyMatch') -> Tuple[int, int]:
             " Sort by start position, then by the length of the match. "
             return fuzzy_match.start_pos, fuzzy_match.match_length
 
@@ -109,7 +109,7 @@ class FuzzyCompleter(Completer):
                 display=self._get_display(match, word_before_cursor),
                 style=match.completion.style)
 
-    def _get_display(self, fuzzy_match: _FuzzyMatch,
+    def _get_display(self, fuzzy_match: '_FuzzyMatch',
                      word_before_cursor: str) -> StyleAndTextTuples:
         """
         Generate formatted text for the display label.

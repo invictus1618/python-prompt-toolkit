@@ -9,9 +9,9 @@ http://pygments.org/
 import array
 import errno
 import sys
-from typing import Dict, Iterable, Tuple, Optional, List, Callable, Set
+from typing import IO, Callable, Dict, Iterable, List, Optional, Set, Tuple
 
-from prompt_toolkit.layout.screen import Size
+from prompt_toolkit.data_structures import Size
 from prompt_toolkit.output import Output
 from prompt_toolkit.styles import ANSI_COLOR_NAMES, Attrs
 
@@ -169,13 +169,13 @@ class _16ColorCache(dict):
         return code, match
 
 
-class _256ColorCache(dict):
+class _256ColorCache(Dict[Tuple[int, int, int], int]):
     """
     Cache which maps (r, g, b) tuples to 256 colors.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         # Build color table.
-        colors = []
+        colors: List[Tuple[int, int, int]] = []
 
         # colors 0..15: 16 basic colors
         colors.append((0x00, 0x00, 0x00))  # 0
@@ -211,7 +211,7 @@ class _256ColorCache(dict):
 
         self.colors = colors
 
-    def __missing__(self, value):
+    def __missing__(self, value: Tuple[int, int, int]) -> int:
         r, g, b = value
 
         # Find closest color.
@@ -383,8 +383,11 @@ class Vt100_Output(Output):
     # file descriptor.
     _fds_not_a_terminal: Set[int] = set()
 
-    def __init__(self, stdout, get_size: Callable[[], Tuple[int, int]],
-                 term: Optional[str] = None, write_binary: bool = True) -> None:
+    def __init__(self,
+                 stdout: IO,
+                 get_size: Callable[[], Size],
+                 term: Optional[str] = None,
+                 write_binary: bool = True) -> None:
 
         assert all(hasattr(stdout, a) for a in ('write', 'flush'))
 
@@ -394,11 +397,11 @@ class Vt100_Output(Output):
         self._buffer: List[str] = []
         self.stdout = stdout
         self.write_binary = write_binary
-        self.get_size = get_size
+        self._get_size = get_size
         self.term = term or 'xterm'
 
         # Cache for escape codes.
-        self._escape_code_caches = {
+        self._escape_code_caches: Dict[ColorDepth, _EscapeCodeCache] = {
             ColorDepth.DEPTH_1_BIT: _EscapeCodeCache(ColorDepth.DEPTH_1_BIT),
             ColorDepth.DEPTH_4_BIT: _EscapeCodeCache(ColorDepth.DEPTH_4_BIT),
             ColorDepth.DEPTH_8_BIT: _EscapeCodeCache(ColorDepth.DEPTH_8_BIT),
@@ -406,7 +409,7 @@ class Vt100_Output(Output):
         }
 
     @classmethod
-    def from_pty(cls, stdout, term: Optional[str] = None) -> Vt100_Output:
+    def from_pty(cls, stdout, term: Optional[str] = None) -> 'Vt100_Output':
         """
         Create an Output class from a pseudo terminal.
         (This will take the dimensions by reading the pseudo
@@ -423,7 +426,7 @@ class Vt100_Output(Output):
             sys.stderr.write(msg % fd)
             cls._fds_not_a_terminal.add(fd)
 
-        def get_size():
+        def get_size() -> Size:
             # If terminal (incorrectly) reports its size as 0, pick a
             # reasonable default.  See
             # https://github.com/ipython/ipython/issues/10071
@@ -434,6 +437,9 @@ class Vt100_Output(Output):
             return Size(rows=rows or 24, columns=columns or 80)
 
         return cls(stdout, get_size, term=term)
+
+    def get_size(self) -> Size:
+        return self._get_size()
 
     def fileno(self) -> int:
         " Return file descriptor. "

@@ -4,6 +4,7 @@ Abstraction of CLI Input.
 from abc import ABCMeta, abstractmethod, abstractproperty
 from contextlib import contextmanager
 from typing import ContextManager, List
+
 from prompt_toolkit.key_binding import KeyPress
 
 __all__ = [

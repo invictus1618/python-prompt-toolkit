@@ -11,10 +11,10 @@ formatting.
 """
 from abc import ABCMeta, abstractmethod
 from colorsys import hls_to_rgb, rgb_to_hls
-from typing import Tuple, Callable, Optional
+from typing import Any, Callable, Optional, Tuple, Union
 
 from prompt_toolkit.cache import memoized
-from prompt_toolkit.filters import to_filter, FilterOrBool
+from prompt_toolkit.filters import FilterOrBool, to_filter
 from prompt_toolkit.utils import to_float, to_str
 
 from .base import ANSI_COLOR_NAMES, Attrs
@@ -46,7 +46,7 @@ class StyleTransformation(metaclass=ABCMeta):
         lowercase hexadecimal color (without '#' prefix).
         """
 
-    def invalidation_hash(self) -> str:
+    def invalidation_hash(self) -> Any:
         """
         When this changes, the cache should be invalidated.
         """
@@ -100,7 +100,10 @@ class SetDefaultColorStyleTransformation(StyleTransformation):
         foreground.
     :param bg: Like `fg`, but for the background.
     """
-    def __init__(self, fg, bg):
+    def __init__(self,
+                 fg: Union[str, Callable[[], str]],
+                 bg: Union[str, Callable[[], str]]) -> None:
+
         self.fg = fg
         self.bg = bg
 
@@ -113,7 +116,7 @@ class SetDefaultColorStyleTransformation(StyleTransformation):
 
         return attrs
 
-    def invalidation_hash(self):
+    def invalidation_hash(self) -> Any:
         return (
             'set-default-color',
             to_str(self.fg),
@@ -213,7 +216,7 @@ class AdjustBrightnessStyleTransformation(StyleTransformation):
             (max_brightness - min_brightness) * value
         )
 
-    def invalidation_hash(self):
+    def invalidation_hash(self) -> Any:
         return (
             'adjust-brightness',
             to_float(self.min_brightness),
@@ -228,7 +231,7 @@ class DummyStyleTransformation(StyleTransformation):
     def transform_attrs(self, attrs: Attrs) -> Attrs:
         return attrs
 
-    def invalidation_hash(self) -> str:
+    def invalidation_hash(self) -> Any:
         # Always return the same hash for these dummy instances.
         return 'dummy-style-transformation'
 
@@ -250,7 +253,7 @@ class DynamicStyleTransformation(StyleTransformation):
         style_transformation = self.get_style_transformation() or DummyStyleTransformation()
         return style_transformation.transform_attrs(attrs)
 
-    def invalidation_hash(self):
+    def invalidation_hash(self) -> Any:
         style_transformation = self.get_style_transformation() or DummyStyleTransformation()
         return style_transformation.invalidation_hash()
 
@@ -270,7 +273,7 @@ class ConditionalStyleTransformation(StyleTransformation):
             return self.style_transformation.transform_attrs(attrs)
         return attrs
 
-    def invalidation_hash(self):
+    def invalidation_hash(self) -> Any:
         return (
             self.filter(),
             self.style_transformation.invalidation_hash()
@@ -286,7 +289,7 @@ class _MergedStyleTransformation(StyleTransformation):
             attrs = transformation.transform_attrs(attrs)
         return attrs
 
-    def invalidation_hash(self):
+    def invalidation_hash(self) -> Any:
         return tuple(t.invalidation_hash() for t in self.style_transformations)
 
 

@@ -1,6 +1,6 @@
-from typing import Callable, List, Iterable, Union, Optional
+from typing import Callable, Iterable, List, Optional, Union
 
-from prompt_toolkit.completion import Completer, Completion, CompleteEvent
+from prompt_toolkit.completion import CompleteEvent, Completer, Completion
 from prompt_toolkit.document import Document
 
 __all__ = [

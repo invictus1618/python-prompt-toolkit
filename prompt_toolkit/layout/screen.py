@@ -1,19 +1,14 @@
 from collections import defaultdict, namedtuple
-from typing import Tuple, List, Dict, Callable, Optional, DefaultDict
+from typing import Callable, DefaultDict, Dict, List, Optional, Tuple
 
 from prompt_toolkit.cache import FastDictCache
+from prompt_toolkit.data_structures import Point
 from prompt_toolkit.utils import get_cwidth
 
 __all__ = [
-    'Point',
-    'Size',
     'Screen',
     'Char',
 ]
-
-
-Point = namedtuple('Point', 'x y')
-Size = namedtuple('Size', 'rows columns')
 
 
 class Char:

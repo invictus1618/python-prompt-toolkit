@@ -1,5 +1,5 @@
 from ctypes import windll
-from typing import ContextManager, List, Callable
+from typing import Callable, ContextManager, List
 
 from prompt_toolkit.eventloop.win32 import create_win32_event
 

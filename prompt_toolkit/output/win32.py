@@ -12,6 +12,7 @@ from ctypes import (
 from ctypes.wintypes import DWORD
 from typing import Dict, List, Tuple
 
+from prompt_toolkit.data_structures import Size
 from prompt_toolkit.renderer import Output
 from prompt_toolkit.styles import ANSI_COLOR_NAMES, Attrs
 from prompt_toolkit.utils import get_cwidth
@@ -118,7 +119,6 @@ class Win32Output(Output):
         self.write(data)
 
     def get_size(self):
-        from prompt_toolkit.layout.screen import Size
         info = self.get_win32_screen_buffer_info()
 
         # We take the width of the *visible* region as the size. Not the width

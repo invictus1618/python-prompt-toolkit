@@ -34,8 +34,8 @@ the next prompt_toolkit `Application`.
 from collections import defaultdict
 from typing import Dict, List
 
-from .base import Input
 from ..key_binding import KeyPress
+from .base import Input
 
 __all__ = [
     'store_typeahead',

@@ -1,11 +1,17 @@
 """
 Wrapper for the layout.
 """
-from typing import Iterable, List, Optional
+from typing import Dict, Generator, Iterable, List, Optional, Union
 
 from prompt_toolkit.buffer import Buffer
 
-from .containers import ConditionalContainer, Container, Window, to_container
+from .containers import (
+    AnyContainer,
+    ConditionalContainer,
+    Container,
+    Window,
+    to_container,
+)
 from .controls import BufferControl, UIControl
 
 __all__ = [
@@ -13,6 +19,8 @@ __all__ = [
     'InvalidLayoutError',
     'walk',
 ]
+
+FocusableElement = Union[str, Buffer, UIControl, AnyContainer]
 
 
 class Layout:
@@ -25,21 +33,25 @@ class Layout:
     :param focused_element: element to be focused initially. (Can be anything
         the `focus` function accepts.)
     """
-    def __init__(self, container, focused_element=None):
+    def __init__(
+            self, container: AnyContainer,
+            focused_element: Optional[FocusableElement] = None):
+
         self.container = to_container(container)
-        self._stack = []
+        self._stack: List[Window] = []
 
         # Map search BufferControl back to the original BufferControl.
         # This is used to keep track of when exactly we are searching, and for
         # applying the search.
         # When a link exists in this dictionary, that means the search is
         # currently active.
-        self.search_links = {}  # search_buffer_control -> original buffer control.
+        # Map: search_buffer_control -> original buffer control.
+        self.search_links: Dict[BufferControl, BufferControl] = {}
 
         # Mapping that maps the children in the layout to their parent.
         # This relationship is calculated dynamically, each time when the UI
         # is rendered.  (UI elements have only references to their children.)
-        self._child_to_parent = {}
+        self._child_to_parent: Dict[Container, Container] = {}
 
         if focused_element is None:
             try:
@@ -50,13 +62,13 @@ class Layout:
             self.focus(focused_element)
 
         # List of visible windows.
-        self.visible_windows = []  # List of `Window` objects.
+        self.visible_windows: List[Window] = []  # List of `Window` objects.
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'Layout(%r, current_window=%r)' % (
             self.container, self.current_window)
 
-    def find_all_windows(self):
+    def find_all_windows(self) -> Generator[Window, None, None]:
         """
         Find all the :class:`.UIControl` objects in this layout.
         """
@@ -68,7 +80,7 @@ class Layout:
         for container in self.find_all_windows():
             yield container.content
 
-    def focus(self, value):
+    def focus(self, value: FocusableElement) -> None:
         """
         Focus the given UI element.
 
@@ -141,7 +153,7 @@ class Layout:
 
                 raise ValueError('Invalid value. Container cannot be focused: %r' % (value, ))
 
-    def has_focus(self, value):
+    def has_focus(self, value: FocusableElement) -> bool:
         """
         Check whether the given control has the focus.
         :param value: :class:`.UIControl` or :class:`.Window` instance.
@@ -303,28 +315,28 @@ class Layout:
 
             self.focus(windows[index])
 
-    def walk(self):
+    def walk(self) -> Iterable[Container]:
         """
         Walk through all the layout nodes (and their children) and yield them.
         """
         for i in walk(self.container):
             yield i
 
-    def walk_through_modal_area(self):
+    def walk_through_modal_area(self) -> Iterable[Container]:
         """
         Walk through all the containers which are in the current 'modal' part
         of the layout.
         """
         # Go up in the tree, and find the root. (it will be a part of the
         # layout, if the focus is in a modal part.)
-        root = self.current_window
+        root: Container = self.current_window
         while not root.is_modal() and root in self._child_to_parent:
             root = self._child_to_parent[root]
 
         for container in walk(root):
             yield container
 
-    def update_parents_relations(self):
+    def update_parents_relations(self) -> None:
         """
         Update child->parent relationships mapping.
         """
@@ -348,7 +360,7 @@ class Layout:
 
         return self.container.reset()
 
-    def get_parent(self, container):
+    def get_parent(self, container: Container) -> Optional[Container]:
         """
         Return the parent container for the given container, or ``None``, if it
         wasn't found.
@@ -363,12 +375,10 @@ class InvalidLayoutError(Exception):
     pass
 
 
-def walk(container, skip_hidden=False):
+def walk(container: Container, skip_hidden: bool = False) -> Iterable[Container]:
     """
     Walk through layout, starting at this container.
     """
-    assert isinstance(container, Container)
-
     # When `skip_hidden` is set, don't go into disabled ConditionalContainer containers.
     if skip_hidden and isinstance(container, ConditionalContainer) and not container.filter():
         return
@@ -377,5 +387,4 @@ def walk(container, skip_hidden=False):
 
     for c in container.get_children():
         # yield from walk(c)
-        for i in walk(c, skip_hidden=skip_hidden):
-            yield i
+        yield from walk(c, skip_hidden=skip_hidden)

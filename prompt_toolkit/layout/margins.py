@@ -2,18 +2,20 @@
 Margin implementations for a :class:`~prompt_toolkit.layout.containers.Window`.
 """
 from abc import ABCMeta, abstractmethod
-from typing import Callable, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
-from prompt_toolkit.filters import to_filter, FilterOrBool
+from prompt_toolkit.filters import FilterOrBool, to_filter
 from prompt_toolkit.formatted_text import (
+    StyleAndTextTuples,
     fragment_list_to_text,
     to_formatted_text,
-    StyleAndTextTuples,
 )
 from prompt_toolkit.utils import get_cwidth
 
 from .controls import UIContent
-from .containers import WindowRenderInfo
+
+if TYPE_CHECKING:
+    from .containers import WindowRenderInfo
 
 __all__ = [
     'Margin',
@@ -40,7 +42,7 @@ class Margin(metaclass=ABCMeta):
         return 0
 
     @abstractmethod
-    def create_margin(self, window_render_info: WindowRenderInfo,
+    def create_margin(self, window_render_info: 'WindowRenderInfo',
                       width: int, height: int) -> StyleAndTextTuples:
         """
         Creates a margin.
@@ -76,7 +78,7 @@ class NumberedMargin(Margin):
         line_count = get_ui_content().line_count
         return max(3, len('%s' % line_count) + 1)
 
-    def create_margin(self, window_render_info: WindowRenderInfo,
+    def create_margin(self, window_render_info: 'WindowRenderInfo',
                       width: int, height: int) -> StyleAndTextTuples:
         relative = self.relative()
 
@@ -135,7 +137,7 @@ class ConditionalMargin(Margin):
         else:
             return 0
 
-    def create_margin(self, window_render_info: WindowRenderInfo,
+    def create_margin(self, window_render_info: 'WindowRenderInfo',
                       width: int, height: int) -> StyleAndTextTuples:
         if width and self.filter():
             return self.margin.create_margin(window_render_info, width, height)
@@ -160,7 +162,7 @@ class ScrollbarMargin(Margin):
     def get_width(self, get_ui_content: Callable[[], UIContent]) -> int:
         return 1
 
-    def create_margin(self, window_render_info: WindowRenderInfo,
+    def create_margin(self, window_render_info: 'WindowRenderInfo',
                       width: int, height: int) -> StyleAndTextTuples:
         content_height = window_render_info.content_height
         window_height = window_render_info.window_height
@@ -252,7 +254,7 @@ class PromptMargin(Margin):
         text = fragment_list_to_text(self.get_prompt())
         return get_cwidth(text)
 
-    def create_margin(self, window_render_info: WindowRenderInfo,
+    def create_margin(self, window_render_info: 'WindowRenderInfo',
                       width: int, height: int) -> StyleAndTextTuples:
         get_continuation = self.get_continuation
         result: StyleAndTextTuples = []

@@ -5,7 +5,7 @@ from prompt_toolkit.cache import memoized
 
 from .base import ANSI_COLOR_NAMES
 from .named_colors import NAMED_COLORS
-from .style import Style, BaseStyle, merge_styles
+from .style import BaseStyle, Style, merge_styles
 
 __all__ = [
     'default_ui_style',

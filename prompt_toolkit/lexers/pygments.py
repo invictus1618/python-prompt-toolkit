@@ -6,10 +6,10 @@ lexing at the beginning of a document, when displaying a very large text.
 """
 import re
 from abc import ABCMeta, abstractmethod
-from typing import Optional, Generator, Callable, Iterable, Dict, Tuple
+from typing import Callable, Dict, Generator, Iterable, Optional, Tuple
 
 from prompt_toolkit.document import Document
-from prompt_toolkit.filters import to_filter, FilterOrBool
+from prompt_toolkit.filters import FilterOrBool, to_filter
 from prompt_toolkit.formatted_text.base import StyleAndTextTuples
 from prompt_toolkit.formatted_text.utils import split_lines
 from prompt_toolkit.styles.pygments import pygments_token_to_classname

@@ -1,14 +1,18 @@
 from enum import Enum
+from typing import Dict
 
 __all__ = [
-    'Key',
+    'Keys',
     'ALL_KEYS',
 ]
 
 
-class Key(Enum):
+class Keys(str, Enum):
     """
     List of keys for use in key bindings.
+
+    Note that this is an "StrEnum", all values can be compared against
+    strings.
     """
     Escape = 'escape'  # Also Control-[
 
@@ -119,18 +123,13 @@ class Key(Enum):
     Backspace    = ControlH
 
 
-ALL_KEYS = [k.value for k in Key]
+ALL_KEYS = [k.value for k in Keys]
 
 
 # Aliases.
-KEY_ALIASES = {
+KEY_ALIASES: Dict[str, str] = {
     'backspace': 'c-h',
     'c-space': 'c-@',
     'enter': 'c-m',
     'tab': 'c-i',
 }
-
-
-# For backwards-compatibility. We renamed 'Keys' to Key, because enums are
-# singular by convention.
-Keys = Key

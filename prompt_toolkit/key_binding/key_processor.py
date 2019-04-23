@@ -9,17 +9,21 @@ correct callbacks when new key presses are feed through `feed`.
 import time
 import weakref
 from collections import deque
-from typing import Optional, Union, List, Generator, Deque
+from typing import TYPE_CHECKING, Deque, Generator, List, Optional, Union
 
 from prompt_toolkit.application.current import get_app
-from prompt_toolkit.buffer import EditReadOnlyBuffer
 from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.eventloop import call_from_executor, run_in_executor
 from prompt_toolkit.filters.app import vi_navigation_mode
 from prompt_toolkit.keys import ALL_KEYS, Keys
 from prompt_toolkit.utils import Event
 
-from .key_bindings import KeyBindingsBase
+from .key_bindings import Binding, KeyBindingsBase
+
+if TYPE_CHECKING:
+    from prompt_toolkit.application import Application
+    from prompt_toolkit.buffer import Buffer
+
 
 __all__ = [
     'KeyProcessor',
@@ -33,7 +37,7 @@ class KeyPress:
     :param key: A `Keys` instance or text (one character).
     :param data: The received string on stdin. (Often vt100 escape codes.)
     """
-    def __init__(self, key: Union[Keys, str], data: Optional[str] = None):
+    def __init__(self, key: Union[Keys, str], data: Optional[str] = None) -> None:
         assert isinstance(key, Keys) or len(key) == 1
 
         if data is None:
@@ -82,8 +86,6 @@ class KeyProcessor:
     :param key_bindings: `KeyBindingsBase` instance.
     """
     def __init__(self, key_bindings: KeyBindingsBase) -> None:
-        assert isinstance(key_bindings, KeyBindingsBase)
-
         self._bindings = key_bindings
 
         self.before_key_press = Event(self)
@@ -112,7 +114,7 @@ class KeyProcessor:
         self._process_coroutine = self._process()
         self._process_coroutine.send(None)
 
-    def _get_matches(self, key_presses: List[KeyPress]):
+    def _get_matches(self, key_presses: List[KeyPress]) -> List[Binding]:
         """
         For a list of :class:`KeyPress` instances. Give the matching handlers
         that would handle this.
@@ -310,7 +312,9 @@ class KeyProcessor:
         self.arg = None
 
         event = KeyPressEvent(
-            weakref.ref(self), arg=arg, key_sequence=key_sequence,
+            weakref.ref(self),
+            arg=arg,
+            key_sequence=key_sequence,
             previous_key_sequence=self._previous_key_sequence,
             is_repeat=(handler == self._previous_handler))
 
@@ -319,6 +323,7 @@ class KeyProcessor:
             event.app.current_buffer.save_to_undo_stack()
 
         # Call handler.
+        from prompt_toolkit.buffer import EditReadOnlyBuffer
         try:
             handler.call(event)
             self._fix_vi_cursor_position(event)
@@ -344,7 +349,7 @@ class KeyProcessor:
                 for k in key_sequence:
                     app.vi_state.current_recording += k.data
 
-    def _fix_vi_cursor_position(self, event: KeyPressEvent) -> None:
+    def _fix_vi_cursor_position(self, event: 'KeyPressEvent') -> None:
         """
         After every command, make sure that if we are in Vi navigation mode, we
         never put the cursor after the last character of a line. (Unless it's
@@ -363,7 +368,7 @@ class KeyProcessor:
             # (This was cleared after changing the cursor position.)
             buff.preferred_column = preferred_column
 
-    def _leave_vi_temp_navigation_mode(self, event: KeyPressEvent) -> None:
+    def _leave_vi_temp_navigation_mode(self, event: 'KeyPressEvent') -> None:
         """
         If we're in Vi temporary navigation (normal) mode, return to
         insert/replace mode after executing one action.
@@ -419,8 +424,13 @@ class KeyPressEvent:
     :param previouskey_sequence: Previous list of `KeyPress` instances.
     :param is_repeat: True when the previous event was delivered to the same handler.
     """
-    def __init__(self, key_processor_ref, arg=None, key_sequence=None,
-            previous_key_sequence=None, is_repeat=False):
+    def __init__(self,
+                 key_processor_ref: 'weakref.ReferenceType[KeyProcessor]',
+                 arg: Optional[str],
+                 key_sequence: List[KeyPress],
+                 previous_key_sequence: List[KeyPress],
+                 is_repeat: bool) -> None:
+
         self._key_processor_ref = key_processor_ref
         self.key_sequence = key_sequence
         self.previous_key_sequence = previous_key_sequence
@@ -431,7 +441,7 @@ class KeyPressEvent:
         self._arg = arg
         self._app = get_app()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'KeyPressEvent(arg=%r, key_sequence=%r, is_repeat=%r)' % (
                 self.arg, self.key_sequence, self.is_repeat)
 
@@ -441,17 +451,20 @@ class KeyPressEvent:
 
     @property
     def key_processor(self) -> KeyProcessor:
-        return self._key_processor_ref()
+        processor = self._key_processor_ref()
+        if processor is None:
+            raise Exception('KeyProcessor was lost. This should not happen.')
+        return processor
 
     @property
-    def app(self):
+    def app(self) -> 'Application':
         """
         The current `Application` object.
         """
         return self._app
 
     @property
-    def current_buffer(self):
+    def current_buffer(self) -> 'Buffer':
         """
         The current buffer.
         """
@@ -500,6 +513,6 @@ class KeyPressEvent:
         self.key_processor.arg = result
 
     @property
-    def cli(self):
+    def cli(self) -> 'Application':
         " For backward-compatibility. "
         return self.app

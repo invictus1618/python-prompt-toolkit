@@ -17,6 +17,6 @@ Filters can be chained using ``&`` and ``|`` operations, and inverted using the
     filter = has_focus('default') & ~ has_selection
 """
 from .app import *
-from .base import Always, Condition, Filter, Never, FilterOrBool
+from .base import Always, Condition, Filter, FilterOrBool, Never
 from .cli import *
 from .utils import is_true, to_filter

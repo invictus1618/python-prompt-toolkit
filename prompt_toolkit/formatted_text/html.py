@@ -1,8 +1,7 @@
 import xml.dom.minidom as minidom
 from typing import Any, List
 
-
-from .base import FormattedText, AnyFormattedText, StyleAndTextTuples
+from .base import AnyFormattedText, FormattedText, StyleAndTextTuples
 
 __all__ = [
     'HTML'

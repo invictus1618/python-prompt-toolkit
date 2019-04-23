@@ -5,7 +5,16 @@ import sys
 import time
 from subprocess import Popen
 from traceback import format_tb
-from typing import Any, Callable, FrozenSet, Iterable, List, Optional, Union, Tuple
+from typing import (
+    Any,
+    Callable,
+    FrozenSet,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.cache import SimpleCache
@@ -22,7 +31,7 @@ from prompt_toolkit.eventloop import (
     run_until_complete,
 )
 from prompt_toolkit.eventloop.base import get_traceback_from_context
-from prompt_toolkit.filters import Condition, to_filter, FilterOrBool, Filter
+from prompt_toolkit.filters import Condition, Filter, FilterOrBool, to_filter
 from prompt_toolkit.input.base import Input
 from prompt_toolkit.input.defaults import get_default_input
 from prompt_toolkit.input.typeahead import get_typeahead, store_typeahead
@@ -32,6 +41,7 @@ from prompt_toolkit.key_binding.bindings.page_navigation import (
 from prompt_toolkit.key_binding.defaults import load_key_bindings
 from prompt_toolkit.key_binding.emacs_state import EmacsState
 from prompt_toolkit.key_binding.key_bindings import (
+    Binding,
     ConditionalKeyBindings,
     GlobalOnlyKeyBindings,
     KeyBindings,
@@ -41,8 +51,8 @@ from prompt_toolkit.key_binding.key_bindings import (
 from prompt_toolkit.key_binding.key_processor import KeyProcessor
 from prompt_toolkit.key_binding.vi_state import ViState
 from prompt_toolkit.keys import Keys
-from prompt_toolkit.layout.controls import BufferControl, UIControl
 from prompt_toolkit.layout.containers import Window
+from prompt_toolkit.layout.controls import BufferControl, UIControl
 from prompt_toolkit.layout.dummy import create_dummy_layout
 from prompt_toolkit.layout.layout import Layout, walk
 from prompt_toolkit.output import ColorDepth, Output
@@ -896,6 +906,11 @@ class _CombinedRegistry(KeyBindingsBase):
 
     @property
     def _version(self):
+        """ Not needed - this object is not going to be wrapped in another
+        KeyBindings object. """
+        raise NotImplementedError
+
+    def bindings(self) -> List[Binding]:
         """ Not needed - this object is not going to be wrapped in another
         KeyBindings object. """
         raise NotImplementedError

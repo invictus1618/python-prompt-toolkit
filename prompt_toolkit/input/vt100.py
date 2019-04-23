@@ -4,7 +4,7 @@ import os
 import sys
 import termios
 import tty
-from typing import Dict, Any, Set, Callable, ContextManager, List
+from typing import Any, Callable, ContextManager, Dict, List, Set
 
 from ..eventloop import get_event_loop
 from ..key_binding import KeyPress

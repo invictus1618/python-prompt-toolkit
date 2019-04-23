@@ -5,7 +5,7 @@ import itertools
 import re
 import sys
 from enum import Enum
-from typing import Dict, List, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 from prompt_toolkit.cache import SimpleCache
 
@@ -238,7 +238,7 @@ class Style(BaseStyle):
 
     @classmethod
     def from_dict(cls, style_dict: Dict[str, str],
-                  priority: Priority = default_priority) -> Style:
+                  priority: Priority = default_priority) -> 'Style':
         """
         :param style_dict: Style dictionary.
         :param priority: `Priority` value.
@@ -300,7 +300,7 @@ class Style(BaseStyle):
 
         return _merge_attrs(list_of_attrs)
 
-    def invalidation_hash(self):
+    def invalidation_hash(self) -> Any:
         return id(self.class_names_and_attrs)
 
 
@@ -327,7 +327,7 @@ def _merge_attrs(list_of_attrs: List[Attrs]) -> Attrs:
         hidden=_or(False, *[a.hidden for a in list_of_attrs]))
 
 
-def merge_styles(styles: List[BaseStyle]) -> _MergedStyle:
+def merge_styles(styles: List[BaseStyle]) -> '_MergedStyle':
     """
     Merge multiple `Style` objects.
     """
@@ -372,5 +372,5 @@ class _MergedStyle(BaseStyle):
                                 default: Attrs = DEFAULT_ATTRS) -> Attrs:
         return self._merged_style.get_attrs_for_style_str(style_str, default)
 
-    def invalidation_hash(self) -> Tuple:
+    def invalidation_hash(self) -> Any:
         return tuple(s.invalidation_hash() for s in self.styles)

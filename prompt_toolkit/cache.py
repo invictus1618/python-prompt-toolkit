@@ -1,6 +1,6 @@
 from collections import deque
 from functools import wraps
-from typing import Callable, Dict, Deque, Generic, TypeVar, Tuple, cast
+from typing import Callable, Deque, Dict, Generic, Tuple, TypeVar, cast
 
 __all__ = [
     'SimpleCache',

@@ -7,6 +7,7 @@ Usage::
     style = style_from_pygments_cls(pygments_style_cls=TangoStyle)
 """
 from typing import Any, Dict
+
 from .style import Style
 
 __all__ = [

@@ -9,6 +9,7 @@ from six import binary_type, int2byte, text_type
 
 from prompt_toolkit.application.current import get_app
 from prompt_toolkit.application.run_in_terminal import run_in_terminal
+from prompt_toolkit.data_structures import Size
 from prompt_toolkit.eventloop import (
     From,
     Future,
@@ -19,7 +20,6 @@ from prompt_toolkit.eventloop.context import context
 from prompt_toolkit.formatted_text import to_formatted_text
 from prompt_toolkit.input.defaults import set_default_input
 from prompt_toolkit.input.posix_pipe import PosixPipeInput
-from prompt_toolkit.layout.screen import Size
 from prompt_toolkit.output.defaults import set_default_output
 from prompt_toolkit.output.vt100 import Vt100_Output
 from prompt_toolkit.renderer import \

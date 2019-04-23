@@ -17,7 +17,7 @@ coordinates to coordinates relative to the user control, and there
 """
 from enum import Enum
 
-from .layout.screen import Point
+from .data_structures import Point
 
 __all__ = [
     'MouseEventType',

@@ -1,3 +1,5 @@
+from typing import cast
+
 from prompt_toolkit.formatted_text import StyleAndTextTuples
 
 __all__ = [
@@ -50,7 +52,7 @@ def explode_text_fragments(fragments: StyleAndTextTuples) -> _ExplodedList:
     """
     # When the fragments is already exploded, don't explode again.
     if getattr(fragments, 'exploded', False):
-        return fragments
+        return cast(_ExplodedList, fragments)
 
     result = []
 

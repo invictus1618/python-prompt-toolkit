@@ -31,7 +31,7 @@ class ColorDepth(Enum):
     TRUE_COLOR = DEPTH_24_BIT
 
     @classmethod
-    def default(cls, term: str = '') -> ColorDepth:
+    def default(cls, term: str = '') -> 'ColorDepth':
         """
         If the user doesn't specify a color depth, use this as a default.
         """

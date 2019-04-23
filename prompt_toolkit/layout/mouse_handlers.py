@@ -1,6 +1,6 @@
 from collections import defaultdict
 from itertools import product
-from typing import DefaultDict, Callable, Tuple
+from typing import Callable, DefaultDict, Tuple
 
 from prompt_toolkit.mouse_events import MouseEvent
 

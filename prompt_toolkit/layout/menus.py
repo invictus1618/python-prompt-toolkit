@@ -3,6 +3,7 @@ import math
 from six.moves import range, zip_longest
 
 from prompt_toolkit.application.current import get_app
+from prompt_toolkit.data_structures import Point
 from prompt_toolkit.filters import (
     Condition,
     has_completions,
@@ -21,7 +22,6 @@ from .containers import ConditionalContainer, HSplit, ScrollOffsets, Window
 from .controls import UIContent, UIControl
 from .dimension import Dimension
 from .margins import ScrollbarMargin
-from .screen import Point
 
 __all__ = [
     'CompletionsMenu',

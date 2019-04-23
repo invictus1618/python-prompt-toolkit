@@ -1,8 +1,7 @@
+from prompt_toolkit.data_structures import Point
 from prompt_toolkit.key_binding.key_processor import KeyPress
 from prompt_toolkit.keys import Keys
-from prompt_toolkit.layout.screen import Point
 from prompt_toolkit.mouse_events import MouseEvent, MouseEventType
-from prompt_toolkit.renderer import HeightIsUnknownError
 from prompt_toolkit.utils import is_windows
 
 from ..key_bindings import KeyBindings
@@ -83,6 +82,7 @@ def load_mouse_bindings():
         if event.app.renderer.height_is_known and mouse_event is not None:
             # Take region above the layout into account. The reported
             # coordinates are absolute to the visible part of the terminal.
+            from prompt_toolkit.renderer import HeightIsUnknownError
             try:
                 y -= event.app.renderer.rows_above_layout
             except HeightIsUnknownError:

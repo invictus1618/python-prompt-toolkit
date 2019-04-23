@@ -8,7 +8,7 @@ instead of calling these function directly.)
 from enum import Enum
 
 from .application.current import get_app
-from .filters import is_searching, to_filter, FilterOrBool
+from .filters import FilterOrBool, is_searching, to_filter
 from .key_binding.vi_state import InputMode
 
 __all__ = [

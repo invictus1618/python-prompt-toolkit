@@ -2,7 +2,7 @@
 Parser for VT100 input stream.
 """
 import re
-from typing import Dict, Callable, Generator, Optional
+from typing import Callable, Dict, Generator, Optional, Tuple, Union
 
 from ..key_binding.key_processor import KeyPress
 from ..keys import Keys
@@ -89,9 +89,9 @@ class Vt100Parser:
         self._input_parser = self._input_parser_generator()
         self._input_parser.send(None)
 
-    def _get_match(self, prefix: str) -> Optional[Keys]:
+    def _get_match(self, prefix: str) -> Union[None, Keys, Tuple[Keys, ...]]:
         """
-        Return the key that maps to this prefix.
+        Return the key (or keys) that maps to this prefix.
         """
         # (hard coded) If we match a CPR response, return Keys.CPRResponse.
         # (This one doesn't fit in the ANSI_SEQUENCES, because it contains
@@ -158,7 +158,8 @@ class Vt100Parser:
                         self._call_handler(prefix[0], prefix[0])
                         prefix = prefix[1:]
 
-    def _call_handler(self, key, insert_text):
+    def _call_handler(self, key: Union[str, Keys, Tuple[Keys, ...]],
+                      insert_text: str) -> None:
         """
         Callback to handler.
         """

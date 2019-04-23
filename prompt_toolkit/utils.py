@@ -1,4 +1,3 @@
-from typing import TypeVar, Generic, Union, Deque, Generator, Dict
 import inspect
 import os
 import signal
@@ -7,7 +6,17 @@ import threading
 import weakref
 from collections import deque
 from functools import partial
-from typing import Optional, Callable, List
+from typing import (
+    Callable,
+    Deque,
+    Dict,
+    Generator,
+    Generic,
+    List,
+    Optional,
+    TypeVar,
+    Union,
+)
 
 from wcwidth import wcwidth
 
